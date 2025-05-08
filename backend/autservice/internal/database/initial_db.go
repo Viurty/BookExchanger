@@ -25,7 +25,8 @@ func StartDB(dsn string, ctx context.Context) *DBX {
 	CREATE TABLE IF NOT EXISTS users (
 		login TEXT PRIMARY KEY,
 		role TEXT NOT NULL,
-		password TEXT NOT NULL
+		password TEXT NOT NULL,
+		phone TEXT NOT NULL
 	);`
 
 	_, err = dbx.ExecContext(ctx, query)

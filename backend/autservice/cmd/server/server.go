@@ -26,8 +26,9 @@ type server struct {
 func (s *server) RegisterUser(ctx context.Context, req *pb.LoginRequest) (*pb.AccessStatus, error) {
 	login := req.GetLogin()
 	password := req.GetPassword()
+	phone := req.GetPhone()
 	encrypted_password := hash.EncryptPassword(password)
-	user := database.UserFromDB{Login: login, Role: "user", Password: encrypted_password}
+	user := database.UserFromDB{Login: login, Role: "user", Phone: phone, Password: encrypted_password}
 
 	s.mu.Lock()
 	err := s.dbx.CreateUser(ctx, user)
@@ -65,7 +66,7 @@ func (s *server) AuthUser(ctx context.Context, req *pb.LoginRequest) (*pb.Access
 		return &pb.AccessStatus{Success: false, MsgError: "Неправильно введен пароль."}, nil
 	}
 
-	return &pb.AccessStatus{Success: true, Role: user.Role}, nil
+	return &pb.AccessStatus{Success: true, Role: user.Role, Phone: user.Phone}, nil
 }
 
 func (s *server) GiveAccess(ctx context.Context, req *pb.LoginRequest) (*pb.RoleStatus, error) {

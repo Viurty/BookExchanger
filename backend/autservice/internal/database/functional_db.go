@@ -9,6 +9,7 @@ type UserFromDB struct {
 	Login    string `json:"login" db:"login"`
 	Role     string `json:"role" db:"role"`
 	Password string `json:"password" db:"password"`
+	Phone    string `json:"phone" db:"phone"`
 }
 
 func (d *DBX) Close() error {
@@ -22,7 +23,7 @@ func (d *DBX) GetUser(ctx context.Context, login string) (UserFromDB, error) {
 }
 
 func (d *DBX) CreateUser(ctx context.Context, user UserFromDB) error {
-	_, err := d.dbx.ExecContext(ctx, `INSERT INTO users (login, role, password) VALUES ($1, $2, $3);`, user.Login, user.Role, user.Password)
+	_, err := d.dbx.ExecContext(ctx, `INSERT INTO users (login, role, password, phone) VALUES ($1, $2, $3, $4);`, user.Login, user.Role, user.Password, user.Phone)
 	return err
 }
 
