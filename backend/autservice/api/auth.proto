@@ -1,32 +1,55 @@
 syntax = "proto3";
 
-package api;
+package auth;
 
 option go_package = "example.com/api";
-option java_package = "com.example.auth";
+option java_package = "com.example.bookservice.auth";
 option java_multiple_files = true;
+
+
+enum Role {
+  USER = 0;
+  ADMIN = 1;
+}
 
 message LoginRequest {
   string login = 1;
   string password = 2;
-  string role = 3;
-  string phone = 4;
 }
 
-message AccessStatus {
-  bool success = 1;
-  string role = 2;
-  string phone = 3;
-  string msgError = 4;
-}
-
-message RoleStatus {
+message UpdateStatus {
   bool success = 1;
   string msgError = 2;
 }
 
+message RegisterStatus {
+  bool success = 1;
+  string msgError = 2;
+}
+
+message SessionToken {
+  bool success = 1;
+  string msgError = 2;
+  string token = 3;
+}
+
+message UserData {
+  string login = 1;
+  Role role = 2;
+  string phone = 3;
+  bool isActive = 4;
+}
+
+message RegisterData {
+  string login = 1;
+  Role role = 2;
+  string phone = 3;
+  string password = 4;
+}
+
 service AuthService {
-  rpc RegisterUser(LoginRequest) returns (AccessStatus);
-  rpc AuthUser(LoginRequest) returns (AccessStatus);
-  rpc GiveRole(LoginRequest) returns (RoleStatus);
+  rpc RegisterUser(RegisterData) returns (RegisterStatus);
+  rpc AuthUser(LoginRequest) returns (SessionToken);
+  rpc GetUserData(SessionToken) returns (UserData);
+  rpc GiveRole(LoginRequest) returns (UpdateStatus);
 }

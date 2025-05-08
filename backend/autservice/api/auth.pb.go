@@ -21,12 +21,56 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type Role int32
+
+const (
+	Role_USER  Role = 0
+	Role_ADMIN Role = 1
+)
+
+// Enum value maps for Role.
+var (
+	Role_name = map[int32]string{
+		0: "USER",
+		1: "ADMIN",
+	}
+	Role_value = map[string]int32{
+		"USER":  0,
+		"ADMIN": 1,
+	}
+)
+
+func (x Role) Enum() *Role {
+	p := new(Role)
+	*p = x
+	return p
+}
+
+func (x Role) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Role) Descriptor() protoreflect.EnumDescriptor {
+	return file_auth_proto_enumTypes[0].Descriptor()
+}
+
+func (Role) Type() protoreflect.EnumType {
+	return &file_auth_proto_enumTypes[0]
+}
+
+func (x Role) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Role.Descriptor instead.
+func (Role) EnumDescriptor() ([]byte, []int) {
+	return file_auth_proto_rawDescGZIP(), []int{0}
+}
+
 type LoginRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Login         string                 `protobuf:"bytes,1,opt,name=login,proto3" json:"login,omitempty"`
 	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
-	Role          string                 `protobuf:"bytes,3,opt,name=role,proto3" json:"role,omitempty"`
-	Phone         string                 `protobuf:"bytes,4,opt,name=phone,proto3" json:"phone,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -75,89 +119,7 @@ func (x *LoginRequest) GetPassword() string {
 	return ""
 }
 
-func (x *LoginRequest) GetRole() string {
-	if x != nil {
-		return x.Role
-	}
-	return ""
-}
-
-func (x *LoginRequest) GetPhone() string {
-	if x != nil {
-		return x.Phone
-	}
-	return ""
-}
-
-type AccessStatus struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Role          string                 `protobuf:"bytes,2,opt,name=role,proto3" json:"role,omitempty"`
-	Phone         string                 `protobuf:"bytes,3,opt,name=phone,proto3" json:"phone,omitempty"`
-	MsgError      string                 `protobuf:"bytes,4,opt,name=msgError,proto3" json:"msgError,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *AccessStatus) Reset() {
-	*x = AccessStatus{}
-	mi := &file_auth_proto_msgTypes[1]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *AccessStatus) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AccessStatus) ProtoMessage() {}
-
-func (x *AccessStatus) ProtoReflect() protoreflect.Message {
-	mi := &file_auth_proto_msgTypes[1]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AccessStatus.ProtoReflect.Descriptor instead.
-func (*AccessStatus) Descriptor() ([]byte, []int) {
-	return file_auth_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *AccessStatus) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *AccessStatus) GetRole() string {
-	if x != nil {
-		return x.Role
-	}
-	return ""
-}
-
-func (x *AccessStatus) GetPhone() string {
-	if x != nil {
-		return x.Phone
-	}
-	return ""
-}
-
-func (x *AccessStatus) GetMsgError() string {
-	if x != nil {
-		return x.MsgError
-	}
-	return ""
-}
-
-type RoleStatus struct {
+type UpdateStatus struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
 	MsgError      string                 `protobuf:"bytes,2,opt,name=msgError,proto3" json:"msgError,omitempty"`
@@ -165,20 +127,72 @@ type RoleStatus struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *RoleStatus) Reset() {
-	*x = RoleStatus{}
+func (x *UpdateStatus) Reset() {
+	*x = UpdateStatus{}
+	mi := &file_auth_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateStatus) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateStatus) ProtoMessage() {}
+
+func (x *UpdateStatus) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateStatus.ProtoReflect.Descriptor instead.
+func (*UpdateStatus) Descriptor() ([]byte, []int) {
+	return file_auth_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *UpdateStatus) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *UpdateStatus) GetMsgError() string {
+	if x != nil {
+		return x.MsgError
+	}
+	return ""
+}
+
+type RegisterStatus struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	MsgError      string                 `protobuf:"bytes,2,opt,name=msgError,proto3" json:"msgError,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RegisterStatus) Reset() {
+	*x = RegisterStatus{}
 	mi := &file_auth_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *RoleStatus) String() string {
+func (x *RegisterStatus) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*RoleStatus) ProtoMessage() {}
+func (*RegisterStatus) ProtoMessage() {}
 
-func (x *RoleStatus) ProtoReflect() protoreflect.Message {
+func (x *RegisterStatus) ProtoReflect() protoreflect.Message {
 	mi := &file_auth_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -190,21 +204,217 @@ func (x *RoleStatus) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use RoleStatus.ProtoReflect.Descriptor instead.
-func (*RoleStatus) Descriptor() ([]byte, []int) {
+// Deprecated: Use RegisterStatus.ProtoReflect.Descriptor instead.
+func (*RegisterStatus) Descriptor() ([]byte, []int) {
 	return file_auth_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *RoleStatus) GetSuccess() bool {
+func (x *RegisterStatus) GetSuccess() bool {
 	if x != nil {
 		return x.Success
 	}
 	return false
 }
 
-func (x *RoleStatus) GetMsgError() string {
+func (x *RegisterStatus) GetMsgError() string {
 	if x != nil {
 		return x.MsgError
+	}
+	return ""
+}
+
+type SessionToken struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	MsgError      string                 `protobuf:"bytes,2,opt,name=msgError,proto3" json:"msgError,omitempty"`
+	Token         string                 `protobuf:"bytes,3,opt,name=token,proto3" json:"token,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SessionToken) Reset() {
+	*x = SessionToken{}
+	mi := &file_auth_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SessionToken) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SessionToken) ProtoMessage() {}
+
+func (x *SessionToken) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SessionToken.ProtoReflect.Descriptor instead.
+func (*SessionToken) Descriptor() ([]byte, []int) {
+	return file_auth_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *SessionToken) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *SessionToken) GetMsgError() string {
+	if x != nil {
+		return x.MsgError
+	}
+	return ""
+}
+
+func (x *SessionToken) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+type UserData struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Login         string                 `protobuf:"bytes,1,opt,name=login,proto3" json:"login,omitempty"`
+	Role          Role                   `protobuf:"varint,2,opt,name=role,proto3,enum=auth.Role" json:"role,omitempty"`
+	Phone         string                 `protobuf:"bytes,3,opt,name=phone,proto3" json:"phone,omitempty"`
+	IsActive      bool                   `protobuf:"varint,4,opt,name=isActive,proto3" json:"isActive,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UserData) Reset() {
+	*x = UserData{}
+	mi := &file_auth_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UserData) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UserData) ProtoMessage() {}
+
+func (x *UserData) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UserData.ProtoReflect.Descriptor instead.
+func (*UserData) Descriptor() ([]byte, []int) {
+	return file_auth_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *UserData) GetLogin() string {
+	if x != nil {
+		return x.Login
+	}
+	return ""
+}
+
+func (x *UserData) GetRole() Role {
+	if x != nil {
+		return x.Role
+	}
+	return Role_USER
+}
+
+func (x *UserData) GetPhone() string {
+	if x != nil {
+		return x.Phone
+	}
+	return ""
+}
+
+func (x *UserData) GetIsActive() bool {
+	if x != nil {
+		return x.IsActive
+	}
+	return false
+}
+
+type RegisterData struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Login         string                 `protobuf:"bytes,1,opt,name=login,proto3" json:"login,omitempty"`
+	Role          Role                   `protobuf:"varint,2,opt,name=role,proto3,enum=auth.Role" json:"role,omitempty"`
+	Phone         string                 `protobuf:"bytes,3,opt,name=phone,proto3" json:"phone,omitempty"`
+	Password      string                 `protobuf:"bytes,4,opt,name=password,proto3" json:"password,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RegisterData) Reset() {
+	*x = RegisterData{}
+	mi := &file_auth_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RegisterData) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RegisterData) ProtoMessage() {}
+
+func (x *RegisterData) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RegisterData.ProtoReflect.Descriptor instead.
+func (*RegisterData) Descriptor() ([]byte, []int) {
+	return file_auth_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *RegisterData) GetLogin() string {
+	if x != nil {
+		return x.Login
+	}
+	return ""
+}
+
+func (x *RegisterData) GetRole() Role {
+	if x != nil {
+		return x.Role
+	}
+	return Role_USER
+}
+
+func (x *RegisterData) GetPhone() string {
+	if x != nil {
+		return x.Phone
+	}
+	return ""
+}
+
+func (x *RegisterData) GetPassword() string {
+	if x != nil {
+		return x.Password
 	}
 	return ""
 }
@@ -214,26 +424,41 @@ var File_auth_proto protoreflect.FileDescriptor
 const file_auth_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"auth.proto\x12\x03api\"j\n" +
+	"auth.proto\x12\x04auth\"@\n" +
 	"\fLoginRequest\x12\x14\n" +
 	"\x05login\x18\x01 \x01(\tR\x05login\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\x12\n" +
-	"\x04role\x18\x03 \x01(\tR\x04role\x12\x14\n" +
-	"\x05phone\x18\x04 \x01(\tR\x05phone\"n\n" +
-	"\fAccessStatus\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x12\n" +
-	"\x04role\x18\x02 \x01(\tR\x04role\x12\x14\n" +
-	"\x05phone\x18\x03 \x01(\tR\x05phone\x12\x1a\n" +
-	"\bmsgError\x18\x04 \x01(\tR\bmsgError\"B\n" +
-	"\n" +
-	"RoleStatus\x12\x18\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\"D\n" +
+	"\fUpdateStatus\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x1a\n" +
-	"\bmsgError\x18\x02 \x01(\tR\bmsgError2\xa5\x01\n" +
-	"\vAuthService\x124\n" +
-	"\fRegisterUser\x12\x11.api.LoginRequest\x1a\x11.api.AccessStatus\x120\n" +
-	"\bAuthUser\x12\x11.api.LoginRequest\x1a\x11.api.AccessStatus\x12.\n" +
-	"\bGiveRole\x12\x11.api.LoginRequest\x1a\x0f.api.RoleStatusB%\n" +
-	"\x10com.example.authP\x01Z\x0fexample.com/apib\x06proto3"
+	"\bmsgError\x18\x02 \x01(\tR\bmsgError\"F\n" +
+	"\x0eRegisterStatus\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x1a\n" +
+	"\bmsgError\x18\x02 \x01(\tR\bmsgError\"Z\n" +
+	"\fSessionToken\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x1a\n" +
+	"\bmsgError\x18\x02 \x01(\tR\bmsgError\x12\x14\n" +
+	"\x05token\x18\x03 \x01(\tR\x05token\"r\n" +
+	"\bUserData\x12\x14\n" +
+	"\x05login\x18\x01 \x01(\tR\x05login\x12\x1e\n" +
+	"\x04role\x18\x02 \x01(\x0e2\n" +
+	".auth.RoleR\x04role\x12\x14\n" +
+	"\x05phone\x18\x03 \x01(\tR\x05phone\x12\x1a\n" +
+	"\bisActive\x18\x04 \x01(\bR\bisActive\"v\n" +
+	"\fRegisterData\x12\x14\n" +
+	"\x05login\x18\x01 \x01(\tR\x05login\x12\x1e\n" +
+	"\x04role\x18\x02 \x01(\x0e2\n" +
+	".auth.RoleR\x04role\x12\x14\n" +
+	"\x05phone\x18\x03 \x01(\tR\x05phone\x12\x1a\n" +
+	"\bpassword\x18\x04 \x01(\tR\bpassword*\x1b\n" +
+	"\x04Role\x12\b\n" +
+	"\x04USER\x10\x00\x12\t\n" +
+	"\x05ADMIN\x10\x012\xe2\x01\n" +
+	"\vAuthService\x128\n" +
+	"\fRegisterUser\x12\x12.auth.RegisterData\x1a\x14.auth.RegisterStatus\x122\n" +
+	"\bAuthUser\x12\x12.auth.LoginRequest\x1a\x12.auth.SessionToken\x121\n" +
+	"\vGetUserData\x12\x12.auth.SessionToken\x1a\x0e.auth.UserData\x122\n" +
+	"\bGiveRole\x12\x12.auth.LoginRequest\x1a\x12.auth.UpdateStatusB1\n" +
+	"\x1ccom.example.bookservice.authP\x01Z\x0fexample.com/apib\x06proto3"
 
 var (
 	file_auth_proto_rawDescOnce sync.Once
@@ -247,24 +472,33 @@ func file_auth_proto_rawDescGZIP() []byte {
 	return file_auth_proto_rawDescData
 }
 
-var file_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_auth_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_auth_proto_goTypes = []any{
-	(*LoginRequest)(nil), // 0: api.LoginRequest
-	(*AccessStatus)(nil), // 1: api.AccessStatus
-	(*RoleStatus)(nil),   // 2: api.RoleStatus
+	(Role)(0),              // 0: auth.Role
+	(*LoginRequest)(nil),   // 1: auth.LoginRequest
+	(*UpdateStatus)(nil),   // 2: auth.UpdateStatus
+	(*RegisterStatus)(nil), // 3: auth.RegisterStatus
+	(*SessionToken)(nil),   // 4: auth.SessionToken
+	(*UserData)(nil),       // 5: auth.UserData
+	(*RegisterData)(nil),   // 6: auth.RegisterData
 }
 var file_auth_proto_depIdxs = []int32{
-	0, // 0: api.AuthService.RegisterUser:input_type -> api.LoginRequest
-	0, // 1: api.AuthService.AuthUser:input_type -> api.LoginRequest
-	0, // 2: api.AuthService.GiveRole:input_type -> api.LoginRequest
-	1, // 3: api.AuthService.RegisterUser:output_type -> api.AccessStatus
-	1, // 4: api.AuthService.AuthUser:output_type -> api.AccessStatus
-	2, // 5: api.AuthService.GiveRole:output_type -> api.RoleStatus
-	3, // [3:6] is the sub-list for method output_type
-	0, // [0:3] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0, // 0: auth.UserData.role:type_name -> auth.Role
+	0, // 1: auth.RegisterData.role:type_name -> auth.Role
+	6, // 2: auth.AuthService.RegisterUser:input_type -> auth.RegisterData
+	1, // 3: auth.AuthService.AuthUser:input_type -> auth.LoginRequest
+	4, // 4: auth.AuthService.GetUserData:input_type -> auth.SessionToken
+	1, // 5: auth.AuthService.GiveRole:input_type -> auth.LoginRequest
+	3, // 6: auth.AuthService.RegisterUser:output_type -> auth.RegisterStatus
+	4, // 7: auth.AuthService.AuthUser:output_type -> auth.SessionToken
+	5, // 8: auth.AuthService.GetUserData:output_type -> auth.UserData
+	2, // 9: auth.AuthService.GiveRole:output_type -> auth.UpdateStatus
+	6, // [6:10] is the sub-list for method output_type
+	2, // [2:6] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_auth_proto_init() }
@@ -277,13 +511,14 @@ func file_auth_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_auth_proto_rawDesc), len(file_auth_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   3,
+			NumEnums:      1,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_auth_proto_goTypes,
 		DependencyIndexes: file_auth_proto_depIdxs,
+		EnumInfos:         file_auth_proto_enumTypes,
 		MessageInfos:      file_auth_proto_msgTypes,
 	}.Build()
 	File_auth_proto = out.File

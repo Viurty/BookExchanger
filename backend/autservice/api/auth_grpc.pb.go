@@ -19,18 +19,20 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	AuthService_RegisterUser_FullMethodName = "/api.AuthService/RegisterUser"
-	AuthService_AuthUser_FullMethodName     = "/api.AuthService/AuthUser"
-	AuthService_GiveRole_FullMethodName     = "/api.AuthService/GiveRole"
+	AuthService_RegisterUser_FullMethodName = "/auth.AuthService/RegisterUser"
+	AuthService_AuthUser_FullMethodName     = "/auth.AuthService/AuthUser"
+	AuthService_GetUserData_FullMethodName  = "/auth.AuthService/GetUserData"
+	AuthService_GiveRole_FullMethodName     = "/auth.AuthService/GiveRole"
 )
 
 // AuthServiceClient is the client API for AuthService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type AuthServiceClient interface {
-	RegisterUser(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*AccessStatus, error)
-	AuthUser(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*AccessStatus, error)
-	GiveRole(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*RoleStatus, error)
+	RegisterUser(ctx context.Context, in *RegisterData, opts ...grpc.CallOption) (*RegisterStatus, error)
+	AuthUser(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*SessionToken, error)
+	GetUserData(ctx context.Context, in *SessionToken, opts ...grpc.CallOption) (*UserData, error)
+	GiveRole(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*UpdateStatus, error)
 }
 
 type authServiceClient struct {
@@ -41,9 +43,9 @@ func NewAuthServiceClient(cc grpc.ClientConnInterface) AuthServiceClient {
 	return &authServiceClient{cc}
 }
 
-func (c *authServiceClient) RegisterUser(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*AccessStatus, error) {
+func (c *authServiceClient) RegisterUser(ctx context.Context, in *RegisterData, opts ...grpc.CallOption) (*RegisterStatus, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AccessStatus)
+	out := new(RegisterStatus)
 	err := c.cc.Invoke(ctx, AuthService_RegisterUser_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -51,9 +53,9 @@ func (c *authServiceClient) RegisterUser(ctx context.Context, in *LoginRequest, 
 	return out, nil
 }
 
-func (c *authServiceClient) AuthUser(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*AccessStatus, error) {
+func (c *authServiceClient) AuthUser(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*SessionToken, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AccessStatus)
+	out := new(SessionToken)
 	err := c.cc.Invoke(ctx, AuthService_AuthUser_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -61,9 +63,19 @@ func (c *authServiceClient) AuthUser(ctx context.Context, in *LoginRequest, opts
 	return out, nil
 }
 
-func (c *authServiceClient) GiveRole(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*RoleStatus, error) {
+func (c *authServiceClient) GetUserData(ctx context.Context, in *SessionToken, opts ...grpc.CallOption) (*UserData, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(RoleStatus)
+	out := new(UserData)
+	err := c.cc.Invoke(ctx, AuthService_GetUserData_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) GiveRole(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*UpdateStatus, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateStatus)
 	err := c.cc.Invoke(ctx, AuthService_GiveRole_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -75,9 +87,10 @@ func (c *authServiceClient) GiveRole(ctx context.Context, in *LoginRequest, opts
 // All implementations must embed UnimplementedAuthServiceServer
 // for forward compatibility.
 type AuthServiceServer interface {
-	RegisterUser(context.Context, *LoginRequest) (*AccessStatus, error)
-	AuthUser(context.Context, *LoginRequest) (*AccessStatus, error)
-	GiveRole(context.Context, *LoginRequest) (*RoleStatus, error)
+	RegisterUser(context.Context, *RegisterData) (*RegisterStatus, error)
+	AuthUser(context.Context, *LoginRequest) (*SessionToken, error)
+	GetUserData(context.Context, *SessionToken) (*UserData, error)
+	GiveRole(context.Context, *LoginRequest) (*UpdateStatus, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
 
@@ -88,13 +101,16 @@ type AuthServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedAuthServiceServer struct{}
 
-func (UnimplementedAuthServiceServer) RegisterUser(context.Context, *LoginRequest) (*AccessStatus, error) {
+func (UnimplementedAuthServiceServer) RegisterUser(context.Context, *RegisterData) (*RegisterStatus, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterUser not implemented")
 }
-func (UnimplementedAuthServiceServer) AuthUser(context.Context, *LoginRequest) (*AccessStatus, error) {
+func (UnimplementedAuthServiceServer) AuthUser(context.Context, *LoginRequest) (*SessionToken, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AuthUser not implemented")
 }
-func (UnimplementedAuthServiceServer) GiveRole(context.Context, *LoginRequest) (*RoleStatus, error) {
+func (UnimplementedAuthServiceServer) GetUserData(context.Context, *SessionToken) (*UserData, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetUserData not implemented")
+}
+func (UnimplementedAuthServiceServer) GiveRole(context.Context, *LoginRequest) (*UpdateStatus, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GiveRole not implemented")
 }
 func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
@@ -119,7 +135,7 @@ func RegisterAuthServiceServer(s grpc.ServiceRegistrar, srv AuthServiceServer) {
 }
 
 func _AuthService_RegisterUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LoginRequest)
+	in := new(RegisterData)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -131,7 +147,7 @@ func _AuthService_RegisterUser_Handler(srv interface{}, ctx context.Context, dec
 		FullMethod: AuthService_RegisterUser_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServiceServer).RegisterUser(ctx, req.(*LoginRequest))
+		return srv.(AuthServiceServer).RegisterUser(ctx, req.(*RegisterData))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -150,6 +166,24 @@ func _AuthService_AuthUser_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AuthServiceServer).AuthUser(ctx, req.(*LoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AuthService_GetUserData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SessionToken)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).GetUserData(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_GetUserData_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).GetUserData(ctx, req.(*SessionToken))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -176,7 +210,7 @@ func _AuthService_GiveRole_Handler(srv interface{}, ctx context.Context, dec fun
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var AuthService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "api.AuthService",
+	ServiceName: "auth.AuthService",
 	HandlerType: (*AuthServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -186,6 +220,10 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "AuthUser",
 			Handler:    _AuthService_AuthUser_Handler,
+		},
+		{
+			MethodName: "GetUserData",
+			Handler:    _AuthService_GetUserData_Handler,
 		},
 		{
 			MethodName: "GiveRole",
