@@ -32,7 +32,7 @@ type AuthServiceClient interface {
 	RegisterUser(ctx context.Context, in *RegisterData, opts ...grpc.CallOption) (*RegisterStatus, error)
 	AuthUser(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*SessionToken, error)
 	GetUserData(ctx context.Context, in *SessionToken, opts ...grpc.CallOption) (*UserData, error)
-	GiveRole(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*UpdateStatus, error)
+	GiveRole(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*UpdateStatus, error)
 }
 
 type authServiceClient struct {
@@ -73,7 +73,7 @@ func (c *authServiceClient) GetUserData(ctx context.Context, in *SessionToken, o
 	return out, nil
 }
 
-func (c *authServiceClient) GiveRole(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*UpdateStatus, error) {
+func (c *authServiceClient) GiveRole(ctx context.Context, in *UpdateRequest, opts ...grpc.CallOption) (*UpdateStatus, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(UpdateStatus)
 	err := c.cc.Invoke(ctx, AuthService_GiveRole_FullMethodName, in, out, cOpts...)
@@ -90,7 +90,7 @@ type AuthServiceServer interface {
 	RegisterUser(context.Context, *RegisterData) (*RegisterStatus, error)
 	AuthUser(context.Context, *LoginRequest) (*SessionToken, error)
 	GetUserData(context.Context, *SessionToken) (*UserData, error)
-	GiveRole(context.Context, *LoginRequest) (*UpdateStatus, error)
+	GiveRole(context.Context, *UpdateRequest) (*UpdateStatus, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
 
@@ -110,7 +110,7 @@ func (UnimplementedAuthServiceServer) AuthUser(context.Context, *LoginRequest) (
 func (UnimplementedAuthServiceServer) GetUserData(context.Context, *SessionToken) (*UserData, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserData not implemented")
 }
-func (UnimplementedAuthServiceServer) GiveRole(context.Context, *LoginRequest) (*UpdateStatus, error) {
+func (UnimplementedAuthServiceServer) GiveRole(context.Context, *UpdateRequest) (*UpdateStatus, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GiveRole not implemented")
 }
 func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
@@ -189,7 +189,7 @@ func _AuthService_GetUserData_Handler(srv interface{}, ctx context.Context, dec 
 }
 
 func _AuthService_GiveRole_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(LoginRequest)
+	in := new(UpdateRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -201,7 +201,7 @@ func _AuthService_GiveRole_Handler(srv interface{}, ctx context.Context, dec fun
 		FullMethod: AuthService_GiveRole_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthServiceServer).GiveRole(ctx, req.(*LoginRequest))
+		return srv.(AuthServiceServer).GiveRole(ctx, req.(*UpdateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

@@ -419,6 +419,58 @@ func (x *RegisterData) GetPassword() string {
 	return ""
 }
 
+type UpdateRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Login         string                 `protobuf:"bytes,1,opt,name=login,proto3" json:"login,omitempty"`
+	Role          Role                   `protobuf:"varint,2,opt,name=role,proto3,enum=auth.Role" json:"role,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateRequest) Reset() {
+	*x = UpdateRequest{}
+	mi := &file_auth_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateRequest) ProtoMessage() {}
+
+func (x *UpdateRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_auth_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateRequest.ProtoReflect.Descriptor instead.
+func (*UpdateRequest) Descriptor() ([]byte, []int) {
+	return file_auth_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *UpdateRequest) GetLogin() string {
+	if x != nil {
+		return x.Login
+	}
+	return ""
+}
+
+func (x *UpdateRequest) GetRole() Role {
+	if x != nil {
+		return x.Role
+	}
+	return Role_USER
+}
+
 var File_auth_proto protoreflect.FileDescriptor
 
 const file_auth_proto_rawDesc = "" +
@@ -449,15 +501,19 @@ const file_auth_proto_rawDesc = "" +
 	"\x04role\x18\x02 \x01(\x0e2\n" +
 	".auth.RoleR\x04role\x12\x14\n" +
 	"\x05phone\x18\x03 \x01(\tR\x05phone\x12\x1a\n" +
-	"\bpassword\x18\x04 \x01(\tR\bpassword*\x1b\n" +
+	"\bpassword\x18\x04 \x01(\tR\bpassword\"E\n" +
+	"\rUpdateRequest\x12\x14\n" +
+	"\x05login\x18\x01 \x01(\tR\x05login\x12\x1e\n" +
+	"\x04role\x18\x02 \x01(\x0e2\n" +
+	".auth.RoleR\x04role*\x1b\n" +
 	"\x04Role\x12\b\n" +
 	"\x04USER\x10\x00\x12\t\n" +
-	"\x05ADMIN\x10\x012\xe2\x01\n" +
+	"\x05ADMIN\x10\x012\xe3\x01\n" +
 	"\vAuthService\x128\n" +
 	"\fRegisterUser\x12\x12.auth.RegisterData\x1a\x14.auth.RegisterStatus\x122\n" +
 	"\bAuthUser\x12\x12.auth.LoginRequest\x1a\x12.auth.SessionToken\x121\n" +
-	"\vGetUserData\x12\x12.auth.SessionToken\x1a\x0e.auth.UserData\x122\n" +
-	"\bGiveRole\x12\x12.auth.LoginRequest\x1a\x12.auth.UpdateStatusB1\n" +
+	"\vGetUserData\x12\x12.auth.SessionToken\x1a\x0e.auth.UserData\x123\n" +
+	"\bGiveRole\x12\x13.auth.UpdateRequest\x1a\x12.auth.UpdateStatusB1\n" +
 	"\x1ccom.example.bookservice.authP\x01Z\x0fexample.com/apib\x06proto3"
 
 var (
@@ -473,7 +529,7 @@ func file_auth_proto_rawDescGZIP() []byte {
 }
 
 var file_auth_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_auth_proto_goTypes = []any{
 	(Role)(0),              // 0: auth.Role
 	(*LoginRequest)(nil),   // 1: auth.LoginRequest
@@ -482,23 +538,25 @@ var file_auth_proto_goTypes = []any{
 	(*SessionToken)(nil),   // 4: auth.SessionToken
 	(*UserData)(nil),       // 5: auth.UserData
 	(*RegisterData)(nil),   // 6: auth.RegisterData
+	(*UpdateRequest)(nil),  // 7: auth.UpdateRequest
 }
 var file_auth_proto_depIdxs = []int32{
 	0, // 0: auth.UserData.role:type_name -> auth.Role
 	0, // 1: auth.RegisterData.role:type_name -> auth.Role
-	6, // 2: auth.AuthService.RegisterUser:input_type -> auth.RegisterData
-	1, // 3: auth.AuthService.AuthUser:input_type -> auth.LoginRequest
-	4, // 4: auth.AuthService.GetUserData:input_type -> auth.SessionToken
-	1, // 5: auth.AuthService.GiveRole:input_type -> auth.LoginRequest
-	3, // 6: auth.AuthService.RegisterUser:output_type -> auth.RegisterStatus
-	4, // 7: auth.AuthService.AuthUser:output_type -> auth.SessionToken
-	5, // 8: auth.AuthService.GetUserData:output_type -> auth.UserData
-	2, // 9: auth.AuthService.GiveRole:output_type -> auth.UpdateStatus
-	6, // [6:10] is the sub-list for method output_type
-	2, // [2:6] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	0, // 2: auth.UpdateRequest.role:type_name -> auth.Role
+	6, // 3: auth.AuthService.RegisterUser:input_type -> auth.RegisterData
+	1, // 4: auth.AuthService.AuthUser:input_type -> auth.LoginRequest
+	4, // 5: auth.AuthService.GetUserData:input_type -> auth.SessionToken
+	7, // 6: auth.AuthService.GiveRole:input_type -> auth.UpdateRequest
+	3, // 7: auth.AuthService.RegisterUser:output_type -> auth.RegisterStatus
+	4, // 8: auth.AuthService.AuthUser:output_type -> auth.SessionToken
+	5, // 9: auth.AuthService.GetUserData:output_type -> auth.UserData
+	2, // 10: auth.AuthService.GiveRole:output_type -> auth.UpdateStatus
+	7, // [7:11] is the sub-list for method output_type
+	3, // [3:7] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_auth_proto_init() }
@@ -512,7 +570,7 @@ func file_auth_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_auth_proto_rawDesc), len(file_auth_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   6,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -18,7 +18,7 @@ func NewDBX(dbx *sqlx.DB) *DBX {
 func StartDB(dsn string, ctx context.Context) *DBX {
 	dbx, err := sqlx.ConnectContext(ctx, "pgx", dsn)
 	if err != nil {
-		log.Fatalf("ошибка подключения к базе данных: %v", err)
+		log.Printf("ошибка подключения к базе данных: %v", err)
 	}
 
 	query := `
@@ -26,12 +26,13 @@ func StartDB(dsn string, ctx context.Context) *DBX {
 		login TEXT PRIMARY KEY,
 		role TEXT NOT NULL,
 		password TEXT NOT NULL,
-		phone TEXT NOT NULL
+		phone TEXT NOT NULL,
+		token TEXT NOT NULL
 	);`
 
 	_, err = dbx.ExecContext(ctx, query)
 	if err != nil {
-		log.Fatalf("ошибка создания таблицы: %v", err)
+		log.Printf("ошибка создания таблицы: %v", err)
 	}
 
 	return NewDBX(dbx)

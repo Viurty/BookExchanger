@@ -48,7 +48,7 @@ message RegisterData {
 }
 message UpdateRequest{
   string login = 1;
-  string role = 2;
+  Role role = 2;
 }
 service AuthService {
   rpc RegisterUser(RegisterData) returns (RegisterStatus);

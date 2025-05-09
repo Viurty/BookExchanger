@@ -46,10 +46,13 @@ message RegisterData {
   string phone = 3;
   string password = 4;
 }
-
+message UpdateRequest{
+  string login = 1;
+  Role role = 2;
+}
 service AuthService {
   rpc RegisterUser(RegisterData) returns (RegisterStatus);
   rpc AuthUser(LoginRequest) returns (SessionToken);
   rpc GetUserData(SessionToken) returns (UserData);
-  rpc GiveRole(LoginRequest) returns (UpdateStatus);
+  rpc GiveRole(UpdateRequest) returns (UpdateStatus);
 }
