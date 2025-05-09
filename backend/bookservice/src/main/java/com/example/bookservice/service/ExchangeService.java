@@ -2,13 +2,16 @@ package com.example.bookservice.service;
 
 import com.example.bookservice.exception.HttpStatusException;
 import com.example.bookservice.model.Exchange;
+import com.example.bookservice.model.ExchangeStatsDto;
 import com.example.bookservice.repository.ExchangeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class ExchangeService {
   private final ExchangeRepository exchangeRepository;
 
@@ -26,11 +29,7 @@ public class ExchangeService {
   }
 
   public List<Exchange> getExchangesByDescCreatedAt() {
-    List<Exchange> changes = exchangeRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
-    if (changes.size() < 5) {
-      throw new HttpStatusException(HttpStatus.NO_CONTENT, "Недостаточно данных!");
-    }
-    return changes;
+    return exchangeRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
   }
 
   private int getCountExchanges() {
@@ -38,24 +37,18 @@ public class ExchangeService {
     return exchanges.size();
   }
 
-  private int getCountSuccesExchanges() {
+  private int getCountSuccessExchanges() {
     List<Exchange> exchanges = exchangeRepository.findByStatus(true);
     return exchanges.size();
   }
 
-  public String getStatisticByExchange() {
-    int cntChange = getCountExchanges();
-    int cntSucChange = getCountSuccesExchanges();
-    double percent = 0;
-    try {
-      percent = 100 * cntChange / cntSucChange;
-    } catch (Exception e) {
-      percent = 0;
+  public ExchangeStatsDto getStatsByExchange() {
+    int countExchanges = getCountExchanges();
+    int countSuccesExchanges = getCountSuccessExchanges();
+    int percentSuccess = 0;
+    if (countExchanges > 0) {
+      percentSuccess = 100 * countSuccesExchanges / countExchanges;
     }
-    String res =
-        String.format(
-            "Всего созданных обменов: %d, Из них успешных: %d, Процент успешных сделок: %d%",
-            cntChange, cntSucChange, percent);
-    return res;
+    return new ExchangeStatsDto(countExchanges, countSuccesExchanges, percentSuccess);
   }
 }

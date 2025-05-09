@@ -14,7 +14,8 @@ public class UserService {
   private final AuthServiceBlockingStub stub;
 
   @Autowired
-  public UserService(@Value("${grpc.auth-service-port}") int port) { // ПРОПИСАТЬ В ПРОПЕРТИЕС ПОРТ!!
+  public UserService(
+      @Value("${grpc.auth-service-port}") int port) { // ПРОПИСАТЬ В ПРОПЕРТИЕС ПОРТ!!
     ManagedChannel channel =
         ManagedChannelBuilder.forAddress("localhost", port).usePlaintext().build();
     this.stub = AuthServiceGrpc.newBlockingStub(channel);
