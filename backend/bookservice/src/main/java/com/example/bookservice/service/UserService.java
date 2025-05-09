@@ -6,12 +6,15 @@ import com.example.bookservice.model.UserDto;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
+@Service
 public class UserService {
   private final AuthServiceBlockingStub stub;
 
   @Autowired
-  public UserService(int port) {
+  public UserService(@Value("${grpc.auth-service-port}") int port) { // ПРОПИСАТЬ В ПРОПЕРТИЕС ПОРТ!!
     ManagedChannel channel =
         ManagedChannelBuilder.forAddress("localhost", port).usePlaintext().build();
     this.stub = AuthServiceGrpc.newBlockingStub(channel);
@@ -38,7 +41,7 @@ public class UserService {
     }
   }
 
-  private String AuthUser(UserDto user) {
+  public String AuthUser(UserDto user) {
     LoginRequest req =
         LoginRequest.newBuilder().setLogin(user.getLogin()).setPassword(user.getPassword()).build();
 
@@ -55,7 +58,7 @@ public class UserService {
     }
   }
 
-  private UserDto GetUserData(String token) {
+  public UserDto GetUserData(String token) {
     SessionToken req = SessionToken.newBuilder().setToken(token).build();
 
     try {
@@ -73,7 +76,7 @@ public class UserService {
     }
   }
 
-  private boolean GiveRole(UserDto user) {
+  public boolean GiveRole(UserDto user) {
     UpdateRequest req =
         UpdateRequest.newBuilder().setLogin(user.getLogin()).setRole(user.getRole()).build();
 

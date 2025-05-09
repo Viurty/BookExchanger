@@ -1,3 +1,3 @@
-// package com.example.bookservice.service;
-//
-// public class ReviewService {}
+package com.example.bookservice.service;
+
+public class ReviewService {}

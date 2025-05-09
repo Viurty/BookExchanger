@@ -1,3 +1,3 @@
 package com.example.bookservice.controller;
 
-public class BookController {}
+public class ExchangeController {}

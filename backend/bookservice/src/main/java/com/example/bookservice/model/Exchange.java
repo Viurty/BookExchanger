@@ -1,7 +1,6 @@
 package com.example.bookservice.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,30 +9,31 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "reviews")
+@Table(name = "books")
 @Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Review {
-
+public class Exchange {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   @Column(nullable = false)
-  private String author;
-
-  @Column(nullable = false, name = "book_name")
-  private String bookName;
+  private String initiator;
 
   @Column(nullable = false)
-  @Min(value = 1, message = "Rating must be at least 1")
-  @Max(value = 5, message = "Rating cannot be more than 5")
-  private int rating;
+  private String recipient;
 
-  @Column() private String comment;
+  @Column(nullable = false, name = "book_initiator")
+  private String bookInitiator;
+
+  @Column(nullable = false, name = "book_recipient")
+  private String bookRecipient;
 
   @Column(name = "created_at")
   private LocalDateTime createdAt;
+
+  @Column(nullable = false)
+  private boolean status; // true = change success
 }
