@@ -27,6 +27,16 @@ public class BookService {
     bookRepository.save(book);
   }
 
+  public int getAverageRatingByBookName(String name) {
+    // FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFfff
+    return 1;
+  }
+
+  public int getCountRatingByBookName(String name) {
+    // FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFfff
+    return 1;
+  }
+
   public List<Book> getBooksByOwner(String login) {
     return bookRepository.findBooksByOwner(login);
   }

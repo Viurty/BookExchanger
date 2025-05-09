@@ -1,12 +1,10 @@
 package com.example.bookservice.service;
 
-import com.example.bookservice.exception.HttpStatusException;
 import com.example.bookservice.model.Exchange;
 import com.example.bookservice.model.ExchangeStatsDto;
 import com.example.bookservice.repository.ExchangeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +16,10 @@ public class ExchangeService {
   @Autowired
   public ExchangeService(ExchangeRepository exchangeRepository) {
     this.exchangeRepository = exchangeRepository;
+  }
+
+  public void addExchange(Exchange exchange) {
+    exchangeRepository.save(exchange);
   }
 
   public List<Exchange> getExchangesByInitiator(String login) {
