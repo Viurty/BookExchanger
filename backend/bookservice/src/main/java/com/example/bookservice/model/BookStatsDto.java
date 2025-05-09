@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 public class BookStatsDto {
-  private int cntBooks;
-  private int cntReadyBooks;
+  private int countBooks;
+  private int countReadyBooks;
   private int percentReady;
 }

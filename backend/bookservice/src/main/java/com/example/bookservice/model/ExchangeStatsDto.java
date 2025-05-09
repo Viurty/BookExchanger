@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ExchangeStatsDto {
-  private int cntExchanges;
-  private int cntSuccessExchanges;
+  private int countExchanges;
+  private int countSuccessExchanges;
   private int percentSuccess;
 }
