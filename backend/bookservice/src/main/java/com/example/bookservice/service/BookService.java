@@ -1,17 +1,16 @@
 package com.example.bookservice.service;
 
+import com.example.bookservice.exception.HttpStatusException;
 import com.example.bookservice.model.Book;
-import com.example.bookservice.model.BookStatsDto;
-import com.example.bookservice.model.UserDto;
+import com.example.bookservice.model.BookAdminStatsDto;
 import com.example.bookservice.repository.BookRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 @Service
 public class BookService {
@@ -24,60 +23,79 @@ public class BookService {
 
   @Transactional
   public void addBook(Book book) {
+    String name = book.getName();
+    boolean isExist = bookRepository.existsByNameIgnoreCase(name);
+    if (isExist) {
+      Book existingBook =
+          bookRepository
+              .findByNameIgnoreCase(name)
+              .orElseThrow(
+                  () ->
+                      new HttpStatusException(
+                          HttpStatus.NOT_FOUND, "Книга с названием " + name + " не найдена!"));
+      ;
+      for (String owner : book.getOwners()) {
+        if (!existingBook.getOwners().contains(owner)) {
+          existingBook.getOwners().add(owner);
+        }
+      }
+      bookRepository.save(existingBook);
+    } else {
+      try {
+        bookRepository.save(book);
+      } catch (DataIntegrityViolationException ex) {
+        throw new HttpStatusException(
+            HttpStatus.CONFLICT, "Книга с названием " + name + " уже существует!");
+      }
+    }
+  }
+
+  @Transactional
+  public void deleteOwner(Long id, String ownerLogin) {
+    Book book =
+        bookRepository
+            .findById(id)
+            .orElseThrow(
+                () ->
+                    new HttpStatusException(
+                        HttpStatus.NOT_FOUND, "Книга с id  " + id + " не найдена!"));
+    ;
+    boolean isRemoved = book.getOwners().remove(ownerLogin);
+    if (!isRemoved) {
+      throw new HttpStatusException(
+          HttpStatus.NOT_FOUND, "Владелец " + ownerLogin + " не найден у книги id=" + id);
+    }
     bookRepository.save(book);
-  }
-
-  public int getAverageRatingByBookName(String name) {
-    // FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFfff
-    return 1;
-  }
-
-  public int getCountRatingByBookName(String name) {
-    // FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFfff
-    return 1;
   }
 
   public List<Book> getBooksByOwner(String login) {
     return bookRepository.findBooksByOwner(login);
   }
 
-  public List<Book> getBooksByReady(boolean status) {
-    return bookRepository.findBooksByReadyForExchange(status);
+  public List<Book> getBooksByReady() {
+    List<Book> readyBooks = bookRepository.findByOwnersIsNotEmpty();
+    return readyBooks;
   }
 
-  public List<String> getOwnersLoginByBookName(String name) {
-    return new ArrayList<String>(bookRepository.findOwnersByBookName(name).keySet());
+  public List<String> getOwnersLoginByBookName(Long id) {
+    return bookRepository.findOwnersById(id);
   }
 
-  public List<String> getOwnersLoginByBookNameAndReadyForExchange(String name) {
-    List<String> ownersLogin = new ArrayList<String>();
-    Map<String, Boolean> owners = bookRepository.findOwnersByBookName(name);
-    Set<String> setKeys = owners.keySet();
-    for (String k : setKeys) {
-      if (owners.get(k)) {
-        ownersLogin.add(k);
-      }
-    }
-    return ownersLogin;
+  private long getCountBooks() {
+    return bookRepository.count();
   }
 
-  private int getCountBooks() {
-    List<Book> books = bookRepository.findAll();
-    return books.size();
+  private long getCountReadyBooks() {
+    return bookRepository.countByOwnersIsNotEmpty();
   }
 
-  private int getCountReadyBooks() {
-    List<Book> books = bookRepository.findBooksByReadyForExchange(true);
-    return books.size();
-  }
-
-  public BookStatsDto getStatsByExchange() {
-    int countBooks = getCountBooks();
-    int countReadyBooks = getCountReadyBooks();
-    int percentSuccess = 0;
+  public BookAdminStatsDto getBookStatsForAdmin() {
+    long countBooks = getCountBooks();
+    long countReadyBooks = getCountReadyBooks();
+    int percentReady = 0;
     if (countBooks > 0) {
-      percentSuccess = 100 * countReadyBooks / countBooks;
+      percentReady = (int) (100 * countReadyBooks / countBooks);
     }
-    return new BookStatsDto(countBooks, countReadyBooks, percentSuccess);
+    return new BookAdminStatsDto(countBooks, countReadyBooks, percentReady);
   }
 }

@@ -12,5 +12,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
   List<Review> findByBookName(String bookName);
 
-  List<Review> findByRate(int rate);
+  int countByRating(int rate);
+
+  boolean existsByAuthorAndBookName(String author, String bookName);
 }

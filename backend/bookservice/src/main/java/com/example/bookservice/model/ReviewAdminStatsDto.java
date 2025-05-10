@@ -7,8 +7,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-public class ExchangeStatsDto {
-  private int countExchanges;
-  private int countSuccessExchanges;
-  private int percentSuccess;
+public class ReviewAdminStatsDto {
+  private int countReviews;
+  private int countRate5;
+  private int countRate1;
 }

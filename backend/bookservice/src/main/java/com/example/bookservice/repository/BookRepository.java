@@ -6,16 +6,22 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
 @Repository
 public interface BookRepository extends JpaRepository<Book, Long> {
-  @Query("SELECT b FROM Book b JOIN b.owners o WHERE o.key = :ownerLogin")
+
+  boolean existsByNameIgnoreCase(String name);
+
+  Optional<Book> findByNameIgnoreCase(String name);
+
+  List<Book> findByOwnersIsNotEmpty();
+
+  @Query("SELECT o FROM Book b JOIN b.owners o WHERE b.id = :id")
+  List<String> findOwnersById(Long id);
+
+  @Query("SELECT DISTINCT b FROM Book b JOIN b.owners o WHERE o = :ownerLogin")
   List<Book> findBooksByOwner(String ownerLogin);
 
-  @Query("SELECT b FROM Book b JOIN b.owners o WHERE o.value = :status")
-  List<Book> findBooksByReadyForExchange(boolean status);
-
-  @Query("SELECT b.owners FROM Book b WHERE b.name = :name")
-  Map<String, Boolean> findOwnersByBookName(String name);
+  long countByOwnersIsNotEmpty();
 }

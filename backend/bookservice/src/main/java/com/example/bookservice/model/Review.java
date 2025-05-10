@@ -21,9 +21,13 @@ public class Review {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  @NotBlank(message = "Author cannot be empty")
+  @Size(max = 100, message = "Author must not exceed 100 characters")
   @Column(nullable = false)
   private String author;
 
+  @NotBlank(message = "Name book cannot be empty")
+  @Size(max = 100, message = "Name book must not exceed 100 characters")
   @Column(nullable = false, name = "book_name")
   private String bookName;
 

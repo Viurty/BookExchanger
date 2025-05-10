@@ -1,13 +1,21 @@
 package com.example.bookservice.service;
 
+import com.example.bookservice.exception.HttpStatusException;
 import com.example.bookservice.model.Exchange;
-import com.example.bookservice.model.ExchangeStatsDto;
+import com.example.bookservice.model.ExchangeAdminStatsDto;
 import com.example.bookservice.repository.ExchangeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class ExchangeService {
@@ -18,8 +26,24 @@ public class ExchangeService {
     this.exchangeRepository = exchangeRepository;
   }
 
+  @Transactional
   public void addExchange(Exchange exchange) {
-    exchangeRepository.save(exchange);
+    LocalDateTime now = LocalDateTime.now();
+    exchange.setCreatedAt(now);
+    try {
+      exchangeRepository.save(exchange);
+    } catch (DataIntegrityViolationException e) {
+      throw new HttpStatusException(HttpStatus.CONFLICT, "Не удалось сохранить обмен!");
+    }
+  }
+
+  @Transactional
+  public void deleteExchange(Long id) {
+    try {
+      exchangeRepository.deleteById(id);
+    } catch (EmptyResultDataAccessException e) {
+      throw new HttpStatusException(HttpStatus.NOT_FOUND, "Обмен с id  " + id + " не найден!");
+    }
   }
 
   public List<Exchange> getExchangesByInitiator(String login) {
@@ -34,23 +58,41 @@ public class ExchangeService {
     return exchangeRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
   }
 
-  private int getCountExchanges() {
-    List<Exchange> exchanges = exchangeRepository.findAll();
-    return exchanges.size();
+  private long getCountExchanges() {
+    return exchangeRepository.count();
   }
 
-  private int getCountSuccessExchanges() {
-    List<Exchange> exchanges = exchangeRepository.findByStatus(true);
-    return exchanges.size();
+  private long getCountSuccessExchanges() {
+    return exchangeRepository.countByStatus("done");
   }
 
-  public ExchangeStatsDto getStatsByExchange() {
-    int countExchanges = getCountExchanges();
-    int countSuccesExchanges = getCountSuccessExchanges();
+  public ExchangeAdminStatsDto getExchangeStatsForAdmin() {
+    long countExchanges = getCountExchanges();
+    long countSuccesExchanges = getCountSuccessExchanges();
     int percentSuccess = 0;
     if (countExchanges > 0) {
-      percentSuccess = 100 * countSuccesExchanges / countExchanges;
+      percentSuccess = (int) (100 * countSuccesExchanges / countExchanges);
     }
-    return new ExchangeStatsDto(countExchanges, countSuccesExchanges, percentSuccess);
+    return new ExchangeAdminStatsDto(countExchanges, countSuccesExchanges, percentSuccess);
+  }
+
+  private static final Set<String> allowed_status = Set.of("wait", "cancel", "done");
+
+  @Transactional
+  public void changeStatus(Long exchangeId, String newStatus) {
+    Exchange exchange =
+        exchangeRepository
+            .findById(exchangeId)
+            .orElseThrow(
+                () ->
+                    new HttpStatusException(
+                        HttpStatus.NOT_FOUND, "Обмен с id=" + exchangeId + " не найден"));
+
+    if (!allowed_status.contains(newStatus)) {
+      throw new HttpStatusException(
+          HttpStatus.BAD_REQUEST,
+          "Неверный статус: " + newStatus + ". Допустимые: " + allowed_status);
+    }
+    exchange.setStatus(newStatus);
   }
 }

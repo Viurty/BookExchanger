@@ -10,9 +10,9 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserDto {
+public class LoginRequestDto {
   private String login;
   private Role role;
   private String phone;
-  private boolean isActive;
+  private String password;
 }

@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Map;
+import java.util.List;
 
 @Entity
 @Table(name = "books")
@@ -24,16 +24,17 @@ public class Book {
 
   @ElementCollection
   @CollectionTable(name = "book_owners", joinColumns = @JoinColumn(name = "book_id"))
-  @MapKeyColumn(name = "owner_login")
-  @Column(name = "is_ready")
-  private Map<String, Boolean> owners;
+  @Column(name = "owner")
+  private List<String> owners;
 
-  @Column(nullable = false, length = 100)
+  @Column(nullable = false, length = 100, unique = true)
   @NotBlank(message = "Name cannot be empty")
   @Size(max = 100, message = "Name must not exceed 100 characters")
   private String name;
 
-  @Column(nullable = false)
+  @Column(nullable = false, length = 100)
+  @NotBlank(message = "Author cannot be empty")
+  @Size(max = 100, message = "Author must not exceed 100 characters")
   private String author;
 
   @Column(nullable = false, length = 100)
@@ -41,7 +42,8 @@ public class Book {
   @Size(max = 100, message = "Genre must not exceed 100 characters")
   private String genre;
 
-  @Column(nullable = false)
+  @Column(nullable = false, length = 1000)
   @NotBlank(message = "Description cannot be empty or invalid")
+  @Size(max = 1000, message = "Description must not exceed 1000 characters")
   private String description;
 }

@@ -7,8 +7,7 @@ import lombok.Setter;
 @Setter
 @Getter
 @AllArgsConstructor
-public class BookStatsDto {
-  private int countBooks;
-  private int countReadyBooks;
-  private int percentReady;
+public class ReviewBookStatsDto {
+  private double avgRating;
+  private int countRating;
 }

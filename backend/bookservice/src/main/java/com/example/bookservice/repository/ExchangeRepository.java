@@ -12,5 +12,5 @@ public interface ExchangeRepository extends JpaRepository<Exchange, Long> {
 
   List<Exchange> findByRecipient(String recipient);
 
-  List<Exchange> findByStatus(boolean status);
+  long countByStatus(String status);
 }
