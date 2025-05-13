@@ -1,0 +1,84 @@
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER:     myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB:       mydb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser -d mydb"]  
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL:  admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - app-network
+
+  auth-service:
+    build:
+      context: ./authservice
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT:     8081
+      DB_USER:  myuser
+      DB_PASS:  mypassword
+      DB_HOST:  postgres
+      DB_PORT:  5432
+      DB_NAME:  mydb
+      SECRET_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAA
+    networks:
+      - app-network
+
+  bookservice:
+    build:
+      context: ./bookservice
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      auth-service:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL:       jdbc:postgresql://postgres:5432/mydb
+      SPRING_DATASOURCE_USERNAME:  myuser
+      SPRING_DATASOURCE_PASSWORD:  mypassword
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      GRPC_AUTH_SERVICE_HOST:      auth-service
+      GRPC_AUTH_SERVICE_PORT:      8081
+      GRPC_AUTH_SERVICE_SECRET:    1234
+    networks:
+      - app-network
+
+volumes:
+  pgdata:
+  pgadmin-data:
+  gradle-cache:
+
+networks:
+  app-network:
+    driver: bridge

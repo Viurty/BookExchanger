@@ -8,13 +8,14 @@ import (
 	"log"
 	"net"
 	"os"
+	"strings"
 	"sync"
 
 	pb "example.com/api"
 	"example.com/internal/database"
 	"example.com/internal/hash"
 	"example.com/internal/jwt"
-	"github.com/lib/pq"
+	"github.com/jackc/pgx/v5/pgconn"
 	"google.golang.org/grpc"
 )
 
@@ -26,18 +27,21 @@ type server struct {
 }
 
 func (s *server) RegisterUser(ctx context.Context, req *pb.RegisterData) (*pb.RegisterStatus, error) {
-	login := req.GetLogin()
-	password := req.GetPassword()
-	phone := req.GetPhone()
-	role := database.EnumToString(req.GetRole())
+	login := strings.TrimSpace(req.GetLogin())
+	password := strings.TrimSpace(req.GetPassword())
+	phone := strings.TrimSpace(req.GetPhone())
+	role := database.EnumToString(pb.Role_USER)
 	encrypted_password := hash.EncryptPassword(password)
+	if strings.Contains(login, " ") || strings.Contains(phone, " ") || strings.Contains(password, " ") {
+		return &pb.RegisterStatus{Success: false, MsgError: "Недопустимые значения в данных."}, nil
+	}
 	user := database.UserFromDB{Login: login, Role: role, Phone: phone, Password: encrypted_password}
 
 	s.mu.Lock()
 	err := s.dbx.CreateUser(ctx, user)
 	s.mu.Unlock()
 	if err != nil {
-		if pgErr, ok := err.(*pq.Error); ok && pgErr.Code == "23505" {
+		if pgErr, ok := err.(*pgconn.PgError); ok && pgErr.Code == "23505" {
 			return &pb.RegisterStatus{Success: false, MsgError: "Пользователь с таким логином уже существует."}, nil
 		} else {
 			log.Printf("ошибка при регистрации пользователя: %v", err)
@@ -60,7 +64,7 @@ func (s *server) AuthUser(ctx context.Context, req *pb.LoginRequest) (*pb.Sessio
 			return &pb.SessionToken{Success: false, MsgError: "Пользователь с таким логином не найден."}, nil
 		} else {
 			log.Printf("ошибка при поиске пользователя: %v", err)
-			return &pb.SessionToken{Success: false, MsgError: "Ошибка со стороны сервера. Попробуйте еще раз."}, nil
+			return &pb.SessionToken{Success: false, MsgError: fmt.Sprintf("%v", err)}, nil
 		}
 	}
 
@@ -71,11 +75,20 @@ func (s *server) AuthUser(ctx context.Context, req *pb.LoginRequest) (*pb.Sessio
 
 	token, err := jwt.GenerateJWT(s.secret)
 	if err != nil {
+		log.Fatalf("не смогли создать токен: %v", err)
+	}
+	log.Printf("Сгенерированный токен: [%s]\n", token)
+	ok := jwt.CheckToken(token, s.secret)
+	log.Println("CheckToken вернул:", ok)
+	if err != nil {
 		return &pb.SessionToken{Success: false, MsgError: "Ошибка во время генерации токена."}, nil
 	}
 	s.mu.Lock()
 	err = s.dbx.UpdateToken(ctx, token, login)
 	s.mu.Unlock()
+	if err != nil {
+		return &pb.SessionToken{Success: false, MsgError: "Ошибка во время загрузки токена в дату базу."}, nil
+	}
 	return &pb.SessionToken{Success: true, Token: token, MsgError: ""}, nil
 }
 
@@ -84,14 +97,16 @@ func (s *server) GetUserData(ctx context.Context, req *pb.SessionToken) (*pb.Use
 
 	isActive := jwt.CheckToken(token, s.secret)
 	if !isActive {
-		return &pb.UserData{IsActive: false}, nil
+		log.Printf("Неправильный токен! isActive: %t\n", isActive)
+		return &pb.UserData{IsActive: isActive}, nil
 	}
 
 	s.mu.Lock()
-	user, err := s.dbx.GetUserByLogin(ctx, token)
+	user, err := s.dbx.GetUserByToken(ctx, token)
 	s.mu.Unlock()
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
+			log.Println("Не найден токен в датабазе")
 			return &pb.UserData{IsActive: false}, nil
 		} else {
 			log.Printf("ошибка при поиске пользователя: %v", err)
@@ -99,6 +114,7 @@ func (s *server) GetUserData(ctx context.Context, req *pb.SessionToken) (*pb.Use
 		}
 	}
 
+	log.Println("Все хорошо! Токен полностью проверен на валидность!")
 	return &pb.UserData{IsActive: true, Login: user.Login, Role: database.StringToEnum(user.Role), Phone: user.Phone}, nil
 }
 
@@ -141,6 +157,7 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 	pb.RegisterAuthServiceServer(grpcServer, &server{dbx: db, secret: []byte(secret)})
+	log.Printf("Сервер запущен!")
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Printf("Ошибка работы gRPC-сервера: %v", err)
 	}

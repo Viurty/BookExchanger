@@ -3,13 +3,10 @@ package com.example.bookservice.controller;
 import com.example.bookservice.model.LoginRequestDto;
 import com.example.bookservice.model.UserDto;
 import com.example.bookservice.service.UserService;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -37,7 +34,7 @@ public class UserController {
     return userService.getUser(token);
   }
 
-  @GetMapping("/role/{code}")
+  @PostMapping("/role/{code}")
   public ResponseEntity<String> getOwnersByUser(
       @RequestBody UserDto user, @PathVariable String code) {
     userService.giveRole(user, code);

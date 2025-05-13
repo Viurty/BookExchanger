@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -27,7 +28,7 @@ func StartDB(dsn string, ctx context.Context) *DBX {
 		role TEXT NOT NULL,
 		password TEXT NOT NULL,
 		phone TEXT NOT NULL,
-		token TEXT NOT NULL
+		token TEXT
 	);`
 
 	_, err = dbx.ExecContext(ctx, query)
@@ -35,5 +36,6 @@ func StartDB(dsn string, ctx context.Context) *DBX {
 		log.Printf("ошибка создания таблицы: %v", err)
 	}
 
+	log.Printf("Датабаза подключена успешно!")
 	return NewDBX(dbx)
 }
