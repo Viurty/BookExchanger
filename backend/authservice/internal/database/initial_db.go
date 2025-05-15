@@ -20,6 +20,7 @@ func StartDB(dsn string, ctx context.Context) *DBX {
 	dbx, err := sqlx.ConnectContext(ctx, "pgx", dsn)
 	if err != nil {
 		log.Printf("ошибка подключения к базе данных: %v", err)
+		return nil
 	}
 
 	query := `

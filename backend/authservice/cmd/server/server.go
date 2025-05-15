@@ -30,7 +30,7 @@ func (s *server) RegisterUser(ctx context.Context, req *pb.RegisterData) (*pb.Re
 	login := strings.TrimSpace(req.GetLogin())
 	password := strings.TrimSpace(req.GetPassword())
 	phone := strings.TrimSpace(req.GetPhone())
-	role := database.EnumToString(pb.Role_USER)
+	role := database.EnumToString(req.GetRole())
 	encrypted_password := hash.EncryptPassword(password)
 	if strings.Contains(login, " ") || strings.Contains(phone, " ") || strings.Contains(password, " ") {
 		return &pb.RegisterStatus{Success: false, MsgError: "Недопустимые значения в данных."}, nil
@@ -45,7 +45,7 @@ func (s *server) RegisterUser(ctx context.Context, req *pb.RegisterData) (*pb.Re
 			return &pb.RegisterStatus{Success: false, MsgError: "Пользователь с таким логином уже существует."}, nil
 		} else {
 			log.Printf("ошибка при регистрации пользователя: %v", err)
-			return &pb.RegisterStatus{Success: false, MsgError: "Ошибка со стороны сервера. Попробуйте еще раз."}, nil
+			return &pb.RegisterStatus{Success: false, MsgError: "Ошибка со стороны сервера."}, nil
 		}
 	}
 
@@ -73,13 +73,9 @@ func (s *server) AuthUser(ctx context.Context, req *pb.LoginRequest) (*pb.Sessio
 		return &pb.SessionToken{Success: false, MsgError: "Неправильно введен пароль."}, nil
 	}
 
+	s.mu.Lock()
 	token, err := jwt.GenerateJWT(s.secret)
-	if err != nil {
-		log.Fatalf("не смогли создать токен: %v", err)
-	}
-	log.Printf("Сгенерированный токен: [%s]\n", token)
-	ok := jwt.CheckToken(token, s.secret)
-	log.Println("CheckToken вернул:", ok)
+	s.mu.Unlock()
 	if err != nil {
 		return &pb.SessionToken{Success: false, MsgError: "Ошибка во время генерации токена."}, nil
 	}
@@ -95,13 +91,8 @@ func (s *server) AuthUser(ctx context.Context, req *pb.LoginRequest) (*pb.Sessio
 func (s *server) GetUserData(ctx context.Context, req *pb.SessionToken) (*pb.UserData, error) {
 	token := req.GetToken()
 
-	isActive := jwt.CheckToken(token, s.secret)
-	if !isActive {
-		log.Printf("Неправильный токен! isActive: %t\n", isActive)
-		return &pb.UserData{IsActive: isActive}, nil
-	}
-
 	s.mu.Lock()
+	isActive := jwt.CheckToken(token, s.secret)
 	user, err := s.dbx.GetUserByToken(ctx, token)
 	s.mu.Unlock()
 	if err != nil {
@@ -114,8 +105,7 @@ func (s *server) GetUserData(ctx context.Context, req *pb.SessionToken) (*pb.Use
 		}
 	}
 
-	log.Println("Все хорошо! Токен полностью проверен на валидность!")
-	return &pb.UserData{IsActive: true, Login: user.Login, Role: database.StringToEnum(user.Role), Phone: user.Phone}, nil
+	return &pb.UserData{IsActive: isActive, Login: user.Login, Role: database.StringToEnum(user.Role), Phone: user.Phone}, nil
 }
 
 func (s *server) GiveRole(ctx context.Context, req *pb.UpdateRequest) (*pb.UpdateStatus, error) {
@@ -131,7 +121,7 @@ func (s *server) GiveRole(ctx context.Context, req *pb.UpdateRequest) (*pb.Updat
 			return &pb.UpdateStatus{Success: false, MsgError: "Пользователь с таким логином не найден."}, nil
 		} else {
 			log.Printf("ошибка при обновлении роли пользователю: %v", err)
-			return &pb.UpdateStatus{Success: false, MsgError: "Ошибка со стороны сервера. Попробуйте еще раз."}, nil
+			return &pb.UpdateStatus{Success: false, MsgError: "Ошибка со стороны сервера."}, nil
 		}
 	}
 

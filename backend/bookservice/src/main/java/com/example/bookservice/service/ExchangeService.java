@@ -58,17 +58,9 @@ public class ExchangeService {
     return exchangeRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
   }
 
-  private long getCountExchanges() {
-    return exchangeRepository.count();
-  }
-
-  private long getCountSuccessExchanges() {
-    return exchangeRepository.countByStatus("done");
-  }
-
   public ExchangeAdminStatsDto getExchangeStatsForAdmin() {
-    long countExchanges = getCountExchanges();
-    long countSuccesExchanges = getCountSuccessExchanges();
+    long countExchanges = exchangeRepository.count();
+    long countSuccesExchanges = exchangeRepository.countByStatus("done");
     int percentSuccess = 0;
     if (countExchanges > 0) {
       percentSuccess = (int) (100 * countSuccesExchanges / countExchanges);

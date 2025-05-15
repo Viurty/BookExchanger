@@ -4,6 +4,7 @@ import com.example.bookservice.auth.*;
 import com.example.bookservice.auth.AuthServiceGrpc.AuthServiceBlockingStub;
 import com.example.bookservice.exception.HttpStatusException;
 import com.example.bookservice.model.LoginRequestDto;
+import com.example.bookservice.model.TokenDto;
 import com.example.bookservice.model.UserDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,25 +25,33 @@ public class UserService {
   }
 
   public void registerUser(LoginRequestDto user) {
-    String login = user.getLogin().trim();
-    String password = user.getPassword().trim();
-    String phone = user.getPhone().trim();
+    String login = user.getLogin();
+    String password = user.getPassword();
+    String phone = user.getPhone();
     String roleString = user.getRole();
-    if (!roleString.isEmpty()) {
-      roleString = roleString.trim().toUpperCase();
-    }
     Role roleEnum = Role.USER;
+
+    if (roleString == null || roleString.isEmpty()) {
+      roleString = "USER";
+    }
+    roleString = roleString.trim().toUpperCase();
     if (roleString.equals("ADMIN")) {
       roleEnum = Role.ADMIN;
     }
-    if (phone.isEmpty() || password.isEmpty() || login.isEmpty()) {
-      throw new HttpStatusException(HttpStatus.BAD_REQUEST, "Недостаточно данных для регистрации");
+
+    if (phone == null
+        || password == null
+        || login == null
+        || phone.trim().isEmpty()
+        || password.trim().isEmpty()
+        || login.trim().isEmpty()) {
+      throw new HttpStatusException(HttpStatus.BAD_REQUEST, "Недостаточно данных.");
     }
     RegisterData req =
         RegisterData.newBuilder()
-            .setLogin(login)
-            .setPassword(password)
-            .setPhone(phone)
+            .setLogin(login.trim())
+            .setPassword(password.trim())
+            .setPhone(phone.trim())
             .setRole(roleEnum)
             .build();
 
@@ -50,46 +59,48 @@ public class UserService {
     try {
       res = stub.registerUser(req);
     } catch (Exception e) {
-      throw new HttpStatusException(
-          HttpStatus.BAD_GATEWAY, "Ошибка со стороны сервера: " + e.getMessage());
+      System.err.printf("ERROR: %s \n", e.getMessage());
+      throw new HttpStatusException(HttpStatus.BAD_GATEWAY, "Ошибка со стороны сервера.");
     }
     if (!res.getSuccess()) {
-      throw new HttpStatusException(
-          HttpStatus.BAD_REQUEST, "Ошибка при авторизации: " + res.getMsgError());
+      throw new HttpStatusException(HttpStatus.BAD_REQUEST, res.getMsgError());
     }
   }
 
-  public String authUser(LoginRequestDto user) {
-    String login = user.getLogin().trim();
-    String password = user.getPassword().trim();
-    String roleString = user.getRole();
-    if (password.isEmpty() || login.isEmpty()) {
-      throw new HttpStatusException(HttpStatus.BAD_REQUEST, "Недостаточно данных для авторизации");
+  public TokenDto authUser(LoginRequestDto user) {
+    String login = user.getLogin();
+    String password = user.getPassword();
+    if (password == null || login == null || password.trim().isEmpty() || login.trim().isEmpty()) {
+      throw new HttpStatusException(HttpStatus.BAD_REQUEST, "Недостаточно данных.");
     }
-    LoginRequest req = LoginRequest.newBuilder().setLogin(login).setPassword(password).build();
+    LoginRequest req =
+        LoginRequest.newBuilder().setLogin(login.trim()).setPassword(password.trim()).build();
 
     SessionToken res;
     try {
       res = stub.authUser(req);
     } catch (Exception e) {
-      throw new HttpStatusException(
-          HttpStatus.BAD_GATEWAY, "Ошибка со стороны сервера: " + e.getMessage());
+      System.err.printf("ERROR: %s \n", e.getMessage());
+      throw new HttpStatusException(HttpStatus.BAD_GATEWAY, "Ошибка со стороны сервера.");
     }
     if (!res.getSuccess()) {
-      throw new HttpStatusException(
-          HttpStatus.BAD_REQUEST, "Ошибка при авторизации: " + res.getMsgError());
+      throw new HttpStatusException(HttpStatus.BAD_REQUEST, res.getMsgError());
     }
-    return res.getToken();
+    return new TokenDto(res.getToken());
   }
 
-  public UserDto getUser(String token) {
-    SessionToken req = SessionToken.newBuilder().setToken(token).build();
+  public UserDto getUser(TokenDto tokenDto) {
+    String token = tokenDto.getToken();
+    if (token == null || token.trim().isEmpty()) {
+      throw new HttpStatusException(HttpStatus.BAD_REQUEST, "Недостаточно данных.");
+    }
+    SessionToken req = SessionToken.newBuilder().setToken(token.trim()).build();
     UserData res;
     try {
       res = stub.getUserData(req);
     } catch (Exception e) {
-      throw new HttpStatusException(
-          HttpStatus.BAD_GATEWAY, "Ошибка со стороны сервера: " + e.getMessage());
+      System.err.printf("ERROR: %s \n", e.getMessage());
+      throw new HttpStatusException(HttpStatus.BAD_GATEWAY, "Ошибка со стороны сервера.");
     }
     if (!res.getIsActive()) {
       throw new HttpStatusException(HttpStatus.BAD_REQUEST, "Невалидный токен!");
@@ -97,25 +108,36 @@ public class UserService {
     return new UserDto(res.getLogin(), res.getRole(), res.getPhone(), res.getIsActive());
   }
 
-  public void giveRole(UserDto user, String password) {
+  public void giveRole(LoginRequestDto user, String password) {
     if (!password.trim().equals(secretCode.trim())) {
-      System.err.printf("password: %s \n secret_password: %s\n", password, secretCode);
-      throw new HttpStatusException(HttpStatus.FORBIDDEN, "Нет доступа");
+      throw new HttpStatusException(HttpStatus.FORBIDDEN, "Нет доступа.");
     }
 
-    UpdateRequest req =
-        UpdateRequest.newBuilder().setLogin(user.getLogin()).setRole(user.getRole()).build();
+    String login = user.getLogin();
+    String roleString = user.getRole();
+    Role roleEnum = Role.USER;
+
+    if (roleString == null
+        || login == null
+        || roleString.trim().isEmpty()
+        || login.trim().isEmpty()) {
+      throw new HttpStatusException(HttpStatus.BAD_REQUEST, "Недостаточно данных.");
+    }
+    roleString = roleString.trim().toUpperCase();
+    if (roleString.equals("ADMIN")) {
+      roleEnum = Role.ADMIN;
+    }
+    UpdateRequest req = UpdateRequest.newBuilder().setLogin(login.trim()).setRole(roleEnum).build();
 
     UpdateStatus res;
     try {
       res = stub.giveRole(req);
     } catch (Exception e) {
-      throw new HttpStatusException(
-          HttpStatus.BAD_GATEWAY, "Ошибка со стороны сервера: " + e.getMessage());
+      System.err.printf("ERROR: %s \n", e.getMessage());
+      throw new HttpStatusException(HttpStatus.BAD_GATEWAY, "Ошибка со стороны сервера.");
     }
     if (!res.getSuccess()) {
-      throw new HttpStatusException(
-          HttpStatus.BAD_REQUEST, "Ошибка при выдаче роли: " + res.getMsgError());
+      throw new HttpStatusException(HttpStatus.BAD_REQUEST, res.getMsgError());
     }
   }
 }

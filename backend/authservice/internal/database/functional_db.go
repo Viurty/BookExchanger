@@ -44,7 +44,7 @@ func (d *DBX) GetUserByLogin(ctx context.Context, login string) (UserFromDB, err
 }
 
 func (d *DBX) CreateUser(ctx context.Context, user UserFromDB) error {
-	_, err := d.dbx.ExecContext(ctx, `INSERT INTO users (login, role, password, phone, token) VALUES ($1, $2, $3, $4, $5);`, user.Login, user.Role, user.Password, user.Phone, "T")
+	_, err := d.dbx.ExecContext(ctx, `INSERT INTO users (login, role, password, phone, token) VALUES ($1, $2, $3, $4, $5);`, user.Login, user.Role, user.Password, user.Phone, "")
 	return err
 }
 

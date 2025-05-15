@@ -24,7 +24,6 @@ func GenerateJWT(jwt_secret []byte) (string, error) {
 
 // Проверка токена на валидность
 func CheckToken(tokenString string, jwt_secret []byte) bool {
-	// Очищаем входную строку
 	tokenString = strings.TrimSpace(tokenString)
 	if strings.HasPrefix(tokenString, "Bearer ") {
 		tokenString = strings.TrimPrefix(tokenString, "Bearer ")
@@ -32,13 +31,6 @@ func CheckToken(tokenString string, jwt_secret []byte) bool {
 	tokenString = strings.ReplaceAll(tokenString, "\n", "")
 	tokenString = strings.ReplaceAll(tokenString, "\r", "")
 
-	// Простая проверка структуры
-	if strings.Count(tokenString, ".") != 2 {
-		log.Println("Неверный формат JWT: должно быть 3 части, разделённые точками")
-		return false
-	}
-
-	// Проверяем алгоритм и возвращаем ключ
 	keyFunc := func(t *jwt.Token) (interface{}, error) {
 		if t.Method != jwt.SigningMethodHS256 {
 			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
@@ -46,20 +38,17 @@ func CheckToken(tokenString string, jwt_secret []byte) bool {
 		return jwt_secret, nil
 	}
 
-	// Парсим и валидируем claims
 	token, err := jwt.ParseWithClaims(tokenString, &jwt.RegisteredClaims{}, keyFunc)
-	log.Printf("Received raw token: [%s]\n", tokenString)
 
 	if err != nil {
 		log.Printf("Ошибка разбора токена: %v", err)
 		return false
 	}
 	if !token.Valid {
-		log.Println("Токен разобран, но недействителен (не прошёл проверку подписи или срок действия)")
+		log.Println("Токен недействителен")
 		return false
 	}
 
-	// Опционально: более детальная проверка полей exp/nbf/iat
 	claims, ok := token.Claims.(*jwt.RegisteredClaims)
 	if !ok {
 		log.Println("Неверный тип claims в токене")
@@ -70,6 +59,5 @@ func CheckToken(tokenString string, jwt_secret []byte) bool {
 		return false
 	}
 
-	log.Println("Токен валиден и прошёл все проверки")
 	return true
 }
