@@ -13,6 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/exchanges")
+@CrossOrigin(origins = "http://localhost:5173")
 public class ExchangeController {
   private final ExchangeService exchangeService;
 
@@ -54,9 +55,7 @@ public class ExchangeController {
   }
 
   @PatchMapping("/{exchange_id}/status")
-  public ResponseEntity<Void> updateStatus(
-      @PathVariable Long exchange_id, @RequestParam String status) {
+  public void updateStatus(@PathVariable Long exchange_id, @RequestParam String status) {
     exchangeService.changeStatus(exchange_id, status);
-    return ResponseEntity.noContent().build();
   }
 }

@@ -14,6 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/reviews")
+@CrossOrigin(origins = "http://localhost:5173")
 public class ReviewController {
   private final ReviewService reviewService;
 
@@ -33,9 +34,9 @@ public class ReviewController {
     return reviewService.getReviewsByAuthor(login);
   }
 
-  @GetMapping("/book/{book_id}")
-  public List<Review> getReviewsByBook(@PathVariable Long book_id) {
-    return reviewService.getReviewsByBookId(book_id);
+  @GetMapping("/book/{bookId}")
+  public List<Review> getReviewsByBook(@PathVariable Long bookId) {
+    return reviewService.getReviewsById(bookId);
   }
 
   @GetMapping("/last")
@@ -48,9 +49,9 @@ public class ReviewController {
     return reviewService.getReviewStatsForAdmin();
   }
 
-  @GetMapping("/stats/{book_id}")
-  public ReviewBookStatsDto getReviewBookStats(@PathVariable Long book_id) {
-    return reviewService.getReviewStatsAboutBook(book_id);
+  @GetMapping("/stats/{bookId}")
+  public ReviewBookStatsDto getReviewBookStats(@PathVariable Long bookId) {
+    return reviewService.getReviewStatsAboutBook(bookId);
   }
 
   @DeleteMapping("/{review_id}")

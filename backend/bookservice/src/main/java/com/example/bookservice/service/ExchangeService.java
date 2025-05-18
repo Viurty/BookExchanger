@@ -3,6 +3,7 @@ package com.example.bookservice.service;
 import com.example.bookservice.exception.HttpStatusException;
 import com.example.bookservice.model.Exchange;
 import com.example.bookservice.model.ExchangeAdminStatsDto;
+import com.example.bookservice.repository.BookRepository;
 import com.example.bookservice.repository.ExchangeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -20,18 +21,34 @@ import java.util.Set;
 @Service
 public class ExchangeService {
   private final ExchangeRepository exchangeRepository;
+  private final BookRepository bookRepository;
 
   @Autowired
-  public ExchangeService(ExchangeRepository exchangeRepository) {
+  public ExchangeService(ExchangeRepository exchangeRepository, BookRepository bookRepository) {
     this.exchangeRepository = exchangeRepository;
+    this.bookRepository = bookRepository;
   }
 
   @Transactional
-  public void addExchange(Exchange exchange) {
+  public void addExchange(Exchange ex) {
+    if (exchangeRepository.existsByInitiatorAndRecipientAndBookInitiatorAndBookRecipient(
+        ex.getInitiator(), ex.getRecipient(), ex.getBookInitiator(), ex.getBookRecipient())) {
+      throw new HttpStatusException(HttpStatus.CONFLICT, "Данный обмен уже существует!");
+    }
+
+    if (!bookRepository.existsByNameIgnoreCase(ex.getBookInitiator())) {
+      throw new HttpStatusException(
+          HttpStatus.NOT_FOUND, "Книга с названием " + ex.getBookInitiator() + " не существует");
+    }
+    if (!bookRepository.existsByNameIgnoreCase(ex.getBookRecipient())) {
+      throw new HttpStatusException(
+          HttpStatus.NOT_FOUND, "Книга с названием " + ex.getBookRecipient() + " не существует");
+    }
     LocalDateTime now = LocalDateTime.now();
-    exchange.setCreatedAt(now);
+    ex.setCreatedAt(now);
+    ex.setStatus("wait");
     try {
-      exchangeRepository.save(exchange);
+      exchangeRepository.save(ex);
     } catch (DataIntegrityViolationException e) {
       throw new HttpStatusException(HttpStatus.CONFLICT, "Не удалось сохранить обмен!");
     }

@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ReviewAdminStatsDto {
-  private int countReviews;
-  private int countRate5;
-  private int countRate1;
+  private long countReviews;
+  private long countRate5;
+  private long countRate1;
 }

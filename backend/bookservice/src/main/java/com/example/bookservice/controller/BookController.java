@@ -2,6 +2,7 @@ package com.example.bookservice.controller;
 
 import com.example.bookservice.model.Book;
 import com.example.bookservice.model.BookAdminStatsDto;
+import com.example.bookservice.model.BookDto;
 import com.example.bookservice.service.BookService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/books")
+@CrossOrigin(origins = "http://localhost:5173")
 public class BookController {
   private final BookService bookService;
 
@@ -22,8 +24,14 @@ public class BookController {
   }
 
   @PostMapping()
-  public ResponseEntity<String> createBook(@Valid @RequestBody Book Book) {
-    bookService.addBook(Book);
+  public ResponseEntity<String> createBook(@Valid @RequestBody BookDto bookDto) {
+    bookService.addBookOnSite(bookDto);
+    return ResponseEntity.status(HttpStatus.CREATED).body("Книга добавлена на сайт!");
+  }
+
+  @PostMapping("/append")
+  public ResponseEntity<String> addBookForUser(@RequestBody BookDto bookDto) {
+    bookService.addBookOnProfile(bookDto);
     return ResponseEntity.status(HttpStatus.CREATED).body("Книга добавлена на ваш аккаунт!");
   }
 
@@ -32,14 +40,19 @@ public class BookController {
     return bookService.getBooksByReady();
   }
 
+  @GetMapping("/{bookId}")
+  public Book getBooksByOwner(@PathVariable Long bookId) {
+    return bookService.getBooksById(bookId);
+  }
+
   @GetMapping("/user/{login}")
-  public List<Book> getBooksByBook(@PathVariable String login) {
+  public List<Book> getBooksByOwner(@PathVariable String login) {
     return bookService.getBooksByOwner(login);
   }
 
-  @GetMapping("/owners/{book_id}")
-  public List<String> getOwnersByBook(@PathVariable Long book_id) {
-    return bookService.getOwnersLoginByBookName(book_id);
+  @GetMapping("/owners/{bookId}")
+  public List<String> getOwnersByBook(@PathVariable Long bookId) {
+    return bookService.getOwnersLoginById(bookId);
   }
 
   @GetMapping("/stats")
@@ -47,10 +60,9 @@ public class BookController {
     return bookService.getBookStatsForAdmin();
   }
 
-  @DeleteMapping("/{book_id}")
-  public ResponseEntity<String> deleteBooks(
-      @PathVariable Long book_id, @RequestParam String login) {
-    bookService.deleteOwner(book_id, login);
+  @PutMapping("/delete")
+  public ResponseEntity<String> deleteBooks(@RequestBody BookDto bookDto) {
+    bookService.deleteOwner(bookDto);
     return ResponseEntity.status(HttpStatus.NO_CONTENT)
         .body("Книга была удалена с вашего аккаунта!");
   }

@@ -31,12 +31,23 @@ public class ReviewService {
 
   @Transactional
   public void addReview(Review review) {
-    boolean isExist =
-        reviewRepository.existsByAuthorAndBookName(review.getAuthor(), review.getBookName());
+    String bookName = review.getBookName();
+    String author = review.getAuthor();
+    boolean isExist = reviewRepository.existsByAuthorAndBookName(author, bookName);
     if (isExist) {
       throw new HttpStatusException(
-          HttpStatus.CONFLICT, "Вы уже оставили отзыв на книгу " + review.getBookName());
+          HttpStatus.CONFLICT, "Вы уже оставили отзыв на книгу " + bookName);
     }
+    if (!bookRepository.existsByNameIgnoreCase(bookName)) {
+      throw new HttpStatusException(
+          HttpStatus.CONFLICT, "Книга с названием " + bookName + " не существует!");
+    }
+    List<String> owners = bookRepository.findOwnersByBookName(bookName);
+    if (!owners.contains(author)) {
+      throw new HttpStatusException(
+          HttpStatus.BAD_REQUEST, "Вы не обладаете книгой с названием " + bookName);
+    }
+
     LocalDateTime now = LocalDateTime.now();
     review.setCreatedAt(now);
     try {
@@ -55,14 +66,14 @@ public class ReviewService {
     }
   }
 
-  public ReviewBookStatsDto getReviewStatsAboutBook(Long id) {
+  public ReviewBookStatsDto getReviewStatsAboutBook(Long bookId) {
     Book book =
         bookRepository
-            .findById(id)
+            .findById(bookId)
             .orElseThrow(
                 () ->
                     new HttpStatusException(
-                        HttpStatus.NOT_FOUND, "Книга с id  " + id + " не найдена!"));
+                        HttpStatus.NOT_FOUND, "Книга с id =   " + bookId + " не найдена!"));
     ;
     List<Review> reviews = reviewRepository.findByBookName(book.getName());
     if (reviews == null || reviews.isEmpty()) {
@@ -80,14 +91,14 @@ public class ReviewService {
     return new ReviewBookStatsDto(averageRating, countRating);
   }
 
-  public List<Review> getReviewsByBookId(Long id) {
+  public List<Review> getReviewsById(Long bookId) {
     Book book =
         bookRepository
-            .findById(id)
+            .findById(bookId)
             .orElseThrow(
                 () ->
                     new HttpStatusException(
-                        HttpStatus.NOT_FOUND, "Книга с id  " + id + " не найдена!"));
+                        HttpStatus.NOT_FOUND, "Книга с id =   " + bookId + " не найдена!"));
     return reviewRepository.findByBookName(book.getName());
   }
 
@@ -99,22 +110,10 @@ public class ReviewService {
     return reviewRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
   }
 
-  private int getCountReviews() {
-    return (int) reviewRepository.count();
-  }
-
-  private int getCountRate5() {
-    return reviewRepository.countByRating(5);
-  }
-
-  private int getCountRate1() {
-    return reviewRepository.countByRating(1);
-  }
-
   public ReviewAdminStatsDto getReviewStatsForAdmin() {
-    int countReviews = getCountReviews();
-    int countRate5 = getCountRate5();
-    int countRate1 = getCountRate1();
+    long countReviews = reviewRepository.count();
+    long countRate5 = reviewRepository.countByRating(5);
+    long countRate1 = reviewRepository.countByRating(1);
     return new ReviewAdminStatsDto(countReviews, countRate5, countRate1);
   }
 }

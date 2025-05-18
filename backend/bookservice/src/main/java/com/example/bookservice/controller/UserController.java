@@ -9,8 +9,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/users")
+@CrossOrigin(origins = "http://localhost:5173")
 public class UserController {
   private final UserService userService;
 
@@ -20,9 +23,10 @@ public class UserController {
   }
 
   @PostMapping()
-  public ResponseEntity<String> createUser(@RequestBody LoginRequestDto user) {
+  public ResponseEntity<Map<String, String>> createUser(@RequestBody LoginRequestDto user) {
     userService.registerUser(user);
-    return ResponseEntity.status(HttpStatus.CREATED).body("Пользователь зарегестрирован!");
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(Map.of("message", "Пользователь зарегистрирован!"));
   }
 
   @PostMapping("/token")
@@ -36,10 +40,10 @@ public class UserController {
   }
 
   @PostMapping("/role/{code}")
-  public ResponseEntity<String> getOwnersByUser(
+  public ResponseEntity<Map<String, String>> getOwnersByUser(
       @RequestBody LoginRequestDto user, @PathVariable String code) {
     userService.giveRole(user, code);
     return ResponseEntity.status(HttpStatus.NO_CONTENT)
-        .body("Пользователь теперь имеет новую роль!");
+        .body(Map.of("message", "Пользователь теперь имеет новую роль!"));
   }
 }

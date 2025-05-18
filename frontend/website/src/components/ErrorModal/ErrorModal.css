@@ -1,0 +1,50 @@
+/* ErrorModal.css */
+
+/* Фон затемнения */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5); /* полупрозрачный черный */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000; /* чтобы перекрыть всё остальное */
+}
+
+/* Содержимое модалки */
+.modal-content {
+  background: #fff;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  max-width: 320px;
+  width: 90%;
+  text-align: center;
+}
+
+/* Заголовок */
+.modal-content h2 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 1.25rem;
+  color: #c53030; /* красный оттенок для заголовка ошибки */
+}
+
+/* Текст сообщения */
+.modal-content p {
+  margin-bottom: 24px;
+  font-size: 1rem;
+  color: #333;
+  line-height: 1.4;
+}
+
+/* Кнопка закрытия */
+.modal-content button {
+  padding: 8px 16px;
+  font-size: 1rem;
+  background: #c53030; /* красный фон */
+  color: #fff;
+  border: none;

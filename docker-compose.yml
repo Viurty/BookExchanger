@@ -1,3 +1,4 @@
+version: '3.8'
 
 services:
   postgres:
@@ -11,7 +12,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U myuser -d mydb"]  
+      test: ["CMD-SHELL", "pg_isready -U myuser -d mydb"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -34,7 +35,7 @@ services:
 
   auth-service:
     build:
-      context: ./authservice
+      context: ./backend/authservice
       dockerfile: Dockerfile
     ports:
       - "8081:8081"
@@ -42,22 +43,22 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      PORT:     8081
-      DB_USER:  myuser
-      DB_PASS:  mypassword
-      DB_HOST:  postgres
-      DB_PORT:  5432
-      DB_NAME:  mydb
-      SECRET_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAA
+      PORT:           8081
+      DB_USER:        myuser
+      DB_PASS:        mypassword
+      DB_HOST:        postgres
+      DB_PORT:        5432
+      DB_NAME:        mydb
+      SECRET_KEY:     AAAAAAAAAAAAAAAAAAAAAAAAAAAA
     networks:
       - app-network
 
   bookservice:
     build:
-      context: ./bookservice
+      context: ./backend/bookservice
       dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
+    expose:
+      - "8080"
     depends_on:
       auth-service:
         condition: service_started
@@ -71,6 +72,31 @@ services:
       GRPC_AUTH_SERVICE_HOST:      auth-service
       GRPC_AUTH_SERVICE_PORT:      8081
       GRPC_AUTH_SERVICE_SECRET:    1234
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend/website
+      dockerfile: Dockerfile 
+    expose:
+      - "80"
+    environment:
+      - VITE_API_BASE_URL=http://bookservice:8080
+    depends_on:
+      - bookservice
+    networks:
+      - app-network
+
+  proxy:
+    image: nginx:stable-alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - bookservice
+      - frontend
     networks:
       - app-network
 

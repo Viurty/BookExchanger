@@ -13,4 +13,7 @@ public interface ExchangeRepository extends JpaRepository<Exchange, Long> {
   List<Exchange> findByRecipient(String recipient);
 
   long countByStatus(String status);
+
+  boolean existsByInitiatorAndRecipientAndBookInitiatorAndBookRecipient(
+      String initiator, String recipient, String bookInitiator, String bookRecipient);
 }
