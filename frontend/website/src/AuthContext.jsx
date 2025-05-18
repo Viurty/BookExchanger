@@ -3,7 +3,7 @@ import {
   registerUser,
   loginUser,
   validateToken as validateTokenRequest
-} from './api'; // скорректируйте путь, если у вас иначе
+} from './api';
 
 const AuthContext = createContext();
 
@@ -16,7 +16,6 @@ export const AuthProvider = ({ children }) => {
   const [username, setUsername] = useState(() => localStorage.getItem('username') || null);
   const [loading, setLoading] = useState(true);
 
-  // Проверяем валидность токена при монтировании
   useEffect(() => {
     const checkToken = async () => {
       if (!token) {
@@ -27,7 +26,7 @@ export const AuthProvider = ({ children }) => {
         await validateTokenRequest({ token });
         setLoading(false);
       } catch (e) {
-        // если токен не валидный — выходим
+
         console.warn('Token validation failed:', e);
         localStorage.removeItem('token');
         localStorage.removeItem('username');
@@ -47,9 +46,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (user, pass, phone) => {
-    // 1) создаём пользователя
     await registerUser(user, pass, phone);
-    // 2) сразу логинимся и сохраняем токен
     const { token: newToken } = await loginUser(user, pass);
     login(newToken, user);
   };
