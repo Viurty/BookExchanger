@@ -867,6 +867,7 @@ a:hover {
 }
 
 
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -880,6 +881,7 @@ a:hover {
   z-index: 1000;
 }
 
+
 .modal-content {
   background: #fff;
   padding: 24px;
@@ -889,6 +891,7 @@ a:hover {
   width: 90%;
   text-align: center;
 }
+
 
 .modal-content h2 {
   margin-top: 0;
@@ -909,6 +912,48 @@ a:hover {
   background: #c53030;
   color: #fff;
   border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+
+.modal-content.success {
+  background: #fff;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 128, 0, 0.2);
+  max-width: 320px;
+  width: 90%;
+  text-align: center;
+}
+
+
+.modal-content.success h2 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 1.25rem;
+  color: #2f855a;
+}
+
+
+.modal-content.success p {
+  margin-bottom: 24px;
+  font-size: 1rem;
+  color: #333;
+}
+
+.modal-content.success button {
+  padding: 8px 16px;
+  font-size: 1rem;
+  background: #2f855a;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.modal-content.success button:hover {
+  background: #276749;
 }
 
 

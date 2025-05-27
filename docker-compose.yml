@@ -1,4 +1,5 @@
-localhostversion: '3.8'
+version: '3.8'
+
 
 services:
   postgres:
@@ -49,7 +50,7 @@ services:
       DB_HOST:        postgres
       DB_PORT:        5432
       DB_NAME:        mydb
-      SECRET_KEY:     very-very-very-very-secret-key-for-my-project
+      SECRET_KEY:     AAAAAAAAAAAAAAAAAAAAAAAAAAAA
     networks:
       - app-network
 

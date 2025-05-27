@@ -19,8 +19,8 @@ import (
 type Server struct {
 	pb.UnimplementedAuthServiceServer
 	mu     sync.RWMutex
-	dbx    *database.DBX
-	secret []byte
+	DBX    *database.DBX
+	Secret []byte
 }
 
 func (s *Server) RegisterUser(ctx context.Context, req *pb.RegisterData) (*pb.RegisterStatus, error) {
@@ -35,7 +35,7 @@ func (s *Server) RegisterUser(ctx context.Context, req *pb.RegisterData) (*pb.Re
 	user := database.UserFromDB{Login: login, Role: role, Phone: phone, Password: encrypted_password}
 
 	s.mu.Lock()
-	err := s.dbx.CreateUser(ctx, user)
+	err := s.DBX.CreateUser(ctx, user)
 	s.mu.Unlock()
 	if err != nil {
 		if pgErr, ok := err.(*pgconn.PgError); ok && pgErr.Code == "23505" {
@@ -54,7 +54,7 @@ func (s *Server) AuthUser(ctx context.Context, req *pb.LoginRequest) (*pb.Sessio
 	password := req.GetPassword()
 
 	s.mu.Lock()
-	user, err := s.dbx.GetUserByLogin(ctx, login)
+	user, err := s.DBX.GetUserByLogin(ctx, login)
 	s.mu.Unlock()
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -71,13 +71,13 @@ func (s *Server) AuthUser(ctx context.Context, req *pb.LoginRequest) (*pb.Sessio
 	}
 
 	s.mu.Lock()
-	token, err := jwt.GenerateJWT(s.secret)
+	token, err := jwt.GenerateJWT(s.Secret)
 	s.mu.Unlock()
 	if err != nil {
 		return &pb.SessionToken{Success: false, MsgError: "Ошибка во время генерации токена."}, nil
 	}
 	s.mu.Lock()
-	err = s.dbx.UpdateToken(ctx, token, login)
+	err = s.DBX.UpdateToken(ctx, token, login)
 	s.mu.Unlock()
 	if err != nil {
 		return &pb.SessionToken{Success: false, MsgError: "Ошибка во время загрузки токена в дату базу."}, nil
@@ -89,8 +89,8 @@ func (s *Server) GetUserData(ctx context.Context, req *pb.SessionToken) (*pb.Use
 	token := req.GetToken()
 
 	s.mu.Lock()
-	isActive := jwt.CheckToken(token, s.secret)
-	user, err := s.dbx.GetUserByToken(ctx, token)
+	isActive := jwt.CheckToken(token, s.Secret)
+	user, err := s.DBX.GetUserByToken(ctx, token)
 	s.mu.Unlock()
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -111,7 +111,7 @@ func (s *Server) GiveRole(ctx context.Context, req *pb.UpdateRequest) (*pb.Updat
 	user := database.UserFromDB{Login: login, Role: role}
 
 	s.mu.Lock()
-	err := s.dbx.UpdateRole(ctx, user)
+	err := s.DBX.UpdateRole(ctx, user)
 	s.mu.Unlock()
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

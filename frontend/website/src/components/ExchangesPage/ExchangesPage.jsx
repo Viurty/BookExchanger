@@ -1,5 +1,3 @@
-// frontend/website/src/components/ExchangesPage/ExchangesPage.jsx
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../AuthContext';
 import {
@@ -11,37 +9,32 @@ import {
 } from '../../api';
 
 import ErrorModal from '../ErrorModal/ErrorModal';
+import SuccessModal from '../SuccessModal/SuccessModal';
 
 const ExchangesPage = () => {
-  const { username } = useAuth(); // логин текущего пользователя
+  const { username } = useAuth();
   const [allBooks, setAllBooks] = useState([]);
   const [myBooks, setMyBooks] = useState([]);
   const [otherBooks, setOtherBooks] = useState([]);
 
-  // Поля формы создания обмена
-  const [offeredBook, setOfferedBook] = useState('');   // хранит ID книги, которую отдаём
-  const [requestedBook, setRequestedBook] = useState(''); // хранит ID книги, которую хотим получить
+  const [offeredBook, setOfferedBook] = useState('');
+  const [requestedBook, setRequestedBook] = useState('');
   const [targetUser, setTargetUser] = useState('');
 
-  // Загрузка списков обменов
-  const [outgoingExchanges, setOutgoingExchanges] = useState([]); // “Я предложил”
-  const [incomingExchanges, setIncomingExchanges] = useState([]); // “Мне предложили”
+  const [outgoingExchanges, setOutgoingExchanges] = useState([]);
+  const [incomingExchanges, setIncomingExchanges] = useState([]);
 
-  // Ошибки и успехи
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // --- Загрузка всех книг и разделение на «мои» и «чужие» ---
   const fetchBooks = async () => {
     try {
       const books = await getBooks();
       setAllBooks(books);
 
-      // мои книги = те, где owners содержит username
       const mine = books.filter((b) => b.owners && b.owners.includes(username));
       setMyBooks(mine);
 
-      // чужие книги = остальные
       const others = books.filter((b) => !(b.owners && b.owners.includes(username)));
       setOtherBooks(others);
     } catch (e) {
@@ -49,7 +42,6 @@ const ExchangesPage = () => {
     }
   };
 
-  // --- Загрузка обменов: исходящие и входящие ---
   const fetchExchanges = async () => {
     try {
       const [out, inc] = await Promise.all([
@@ -66,10 +58,9 @@ const ExchangesPage = () => {
   useEffect(() => {
     fetchBooks();
     fetchExchanges();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // --- Создание нового обмена ---
+
   const handleCreateExchange = async (e) => {
     e.preventDefault();
 
@@ -79,7 +70,7 @@ const ExchangesPage = () => {
     }
 
     try {
-      // Из ID книги находим название (бэкенд ожидает название книги)
+
       const offeredName = myBooks.find((b) => b.id === +offeredBook)?.name;
       const requestedName = otherBooks.find((b) => b.id === +requestedBook)?.name;
 
@@ -96,12 +87,12 @@ const ExchangesPage = () => {
       );
 
       setSuccess('Обмен успешно создан!');
-      // Сброс полей
+
       setOfferedBook('');
       setRequestedBook('');
       setTargetUser('');
 
-      // Обновляем списки
+
       fetchExchanges();
       fetchBooks();
     } catch (e) {
@@ -109,7 +100,7 @@ const ExchangesPage = () => {
     }
   };
 
-  // --- Изменение статуса обмена (для Confirm/Cancel) ---
+
   const handleChangeStatus = async (exchangeId, newStatus) => {
     try {
       await updateExchangeStatus(exchangeId, newStatus);
@@ -118,7 +109,7 @@ const ExchangesPage = () => {
           ? 'Обмен подтверждён!'
           : 'Обмен отменён!'
       );
-      // Обновляем списки
+
       fetchExchanges();
       fetchBooks();
     } catch (e) {
@@ -133,7 +124,7 @@ const ExchangesPage = () => {
     <div className="exchange-container">
       <h1>Обмены</h1>
 
-      {/* --- Форма создания нового обмена --- */}
+
       <section className="exchange-form-section">
         <h2>Создать обмен</h2>
         <form onSubmit={handleCreateExchange} className="exchange-form">
@@ -184,7 +175,7 @@ const ExchangesPage = () => {
         </form>
       </section>
 
-      {/* --- Список «Я предложил» (исходящие обмены) --- */}
+
       <section className="exchange-list-section">
         <h2>Я предложил</h2>
         {outgoingExchanges.length === 0 ? (
@@ -206,7 +197,7 @@ const ExchangesPage = () => {
                   <strong>Статус:</strong> {ex.status}
                 </p>
 
-                {/* Если статус “wait” и текущий пользователь — инициатор, можно отменить */}
+
                 {ex.status === 'wait' && (
                   <div className="exchange-actions">
                     <button
@@ -223,7 +214,7 @@ const ExchangesPage = () => {
         )}
       </section>
 
-      {/* --- Список «Мне предложили» (входящие обмены) --- */}
+
       <section className="exchange-list-section">
         <h2>Мне предложили</h2>
         {incomingExchanges.length === 0 ? (
@@ -245,7 +236,7 @@ const ExchangesPage = () => {
                   <strong>Статус:</strong> {ex.status}
                 </p>
 
-                {/* Если статус “wait” и текущий пользователь — получатель, показываем “Подтвердить” и “Отменить” */}
+
                 {ex.status === 'wait' && (
                   <div className="exchange-actions">
                     <button
@@ -267,12 +258,9 @@ const ExchangesPage = () => {
           </div>
         )}
       </section>
-
-      {/* --- Модалки ошибок/успеха --- */}
       {error && <ErrorModal visible={true} message={error} onClose={closeError} />}
-      {success && (
-        <ErrorModal visible={true} message={success} onClose={closeSuccess} />
-      )}
+
+      {success && (<SuccessModal visible={true} message={success} onClose={closeSuccess} />)}
     </div>
   );
 };

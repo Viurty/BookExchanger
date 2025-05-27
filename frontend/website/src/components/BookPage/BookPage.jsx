@@ -9,6 +9,7 @@ import {
 } from '../../api';
 import { useAuth } from '../../AuthContext';
 import ErrorModal from '../ErrorModal/ErrorModal';
+import SuccessModal from '../SuccessModal/SuccessModal'
 
 const BookPage = () => {
   const { id } = useParams();
@@ -154,9 +155,9 @@ const BookPage = () => {
           <button type="submit">Отправить</button>
         </form>
       </div>
-
       {error && <ErrorModal visible={true} message={error} onClose={closeError} />}
-      {success && <ErrorModal visible={true} message={success} onClose={closeSuccess} />}
+
+      {success && <SuccessModal visible={true} message={success} onClose={closeSuccess} />}
     </div>
   );
 };

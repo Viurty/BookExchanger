@@ -1,6 +1,7 @@
 package com.example.bookservice.service;
 
 import com.example.bookservice.exception.HttpStatusException;
+import com.example.bookservice.model.Book;
 import com.example.bookservice.model.Exchange;
 import com.example.bookservice.model.ExchangeAdminStatsDto;
 import com.example.bookservice.repository.BookRepository;
@@ -43,6 +44,9 @@ public class ExchangeService {
     if (!bookRepository.existsByNameIgnoreCase(ex.getBookRecipient())) {
       throw new HttpStatusException(
           HttpStatus.NOT_FOUND, "Книга с названием " + ex.getBookRecipient() + " не существует");
+    }
+    if (!bookRepository.findOwnersByBookName(ex.getBookRecipient()).contains(ex.getRecipient())) {
+      throw new HttpStatusException(HttpStatus.CONFLICT, "У данного пользователя нет данной книги");
     }
     LocalDateTime now = LocalDateTime.now();
     ex.setCreatedAt(now);
@@ -103,5 +107,48 @@ public class ExchangeService {
           "Неверный статус: " + newStatus + ". Допустимые: " + allowed_status);
     }
     exchange.setStatus(newStatus);
+    if (newStatus.equals("done")) {
+      String bookNameInitiator = exchange.getBookInitiator();
+      String bookNameRecipient = exchange.getBookRecipient();
+
+      Book bookInitiator =
+          bookRepository
+              .findByNameIgnoreCase(bookNameInitiator)
+              .orElseThrow(
+                  () ->
+                      new HttpStatusException(
+                          HttpStatus.NOT_FOUND,
+                          "Книга с названием  " + bookNameInitiator + " не найдена!"));
+      ;
+      Book bookRecipient =
+          bookRepository
+              .findByNameIgnoreCase(bookNameRecipient)
+              .orElseThrow(
+                  () ->
+                      new HttpStatusException(
+                          HttpStatus.NOT_FOUND,
+                          "Книга с названием  " + bookNameRecipient + " не найдена!"));
+      ;
+      if (!bookInitiator.getOwners().remove(exchange.getInitiator())) {
+        throw new HttpStatusException(
+            HttpStatus.NOT_FOUND,
+            "Владелец "
+                + exchange.getInitiator()
+                + " не привязан к книге с названием "
+                + bookNameInitiator);
+      }
+      if (!bookRecipient.getOwners().remove(exchange.getRecipient())) {
+        throw new HttpStatusException(
+            HttpStatus.NOT_FOUND,
+            "Владелец "
+                + exchange.getRecipient()
+                + " не привязан к книге с названием "
+                + bookNameRecipient);
+      }
+      bookInitiator.getOwners().add(exchange.getRecipient());
+      bookRecipient.getOwners().add(exchange.getInitiator());
+      bookRepository.save(bookInitiator);
+      bookRepository.save(bookRecipient);
+    }
   }
 }

@@ -7,9 +7,10 @@ import {
   promoteToAdmin,
   getUserByToken,
 } from '../../api';
+
 import { useAuth } from '../../AuthContext';
 import ErrorModal from '../ErrorModal/ErrorModal';
-
+import SuccessModal from '../SuccessModal/SuccessModal';
 const AdminPanel = () => {
   const { token, refreshUser } = useAuth();
 
@@ -117,8 +118,8 @@ const AdminPanel = () => {
         {bookStats ? (
           <ul>
             <li>Всего книг: {bookStats.countBooks}</li>
-            <li>Готовых: {bookStats.countReadyBooks}</li>
-            <li>Процент готовых: {bookStats.percentReady}%</li>
+            <li>Готовых к обмену: {bookStats.countReadyBooks}</li>
+            <li>Процент готовых к обмену: {bookStats.percentReady}%</li>
           </ul>
         ) : (
           <p>{loadingStats ? 'Загрузка...' : 'Нет данных'}</p>
@@ -167,6 +168,8 @@ const AdminPanel = () => {
       </section>
 
       {error && <ErrorModal visible message={error} onClose={closeError} />}
+
+      {success && <SuccessModal visible message={success} onClose={closeSuccess} />}
     </div>
   );
 };

@@ -9,6 +9,7 @@ import (
 
 	pb "example.com/api"
 	"example.com/internal/database"
+	"example.com/internal/server"
 	"google.golang.org/grpc"
 )
 
@@ -30,7 +31,7 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer()
-	pb.RegisterAuthServiceServer(grpcServer, &Server{dbx: db, secret: []byte(secret)})
+	pb.RegisterAuthServiceServer(grpcServer, &server.Server{DBX: db, Secret: []byte(secret)})
 	log.Printf("Сервер запущен!")
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Printf("Ошибка работы gRPC-сервера: %v", err)

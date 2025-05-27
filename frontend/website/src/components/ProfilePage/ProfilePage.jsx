@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../AuthContext';
 import { getBooksByUser, removeBookFromUser, getUserByToken } from '../../api';
 import ErrorModal from '../ErrorModal/ErrorModal';
+import SuccessModal from '../SuccessModal/SuccessModal';
 
 const ProfilePage = () => {
   const { username, token } = useAuth();
@@ -73,9 +74,8 @@ const ProfilePage = () => {
           ))}
         </ul>
       )}
-
-      {error && <ErrorModal visible message={error} onClose={closeError} />}
-      {success && <ErrorModal visible message={success} onClose={closeSuccess} />}
+      {error && <ErrorModal visible={true} message={error} onClose={closeError} />}
+      {success && <SuccessModal visible={true} message={success} onClose={closeSuccess} />}
     </div>
   );
 };

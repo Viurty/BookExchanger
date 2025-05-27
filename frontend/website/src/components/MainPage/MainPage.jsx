@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { getBooks, createBook, appendBook } from '../../api';
 import { useAuth } from '../../AuthContext';
 import ErrorModal from '../ErrorModal/ErrorModal';
+import SuccessModal from '../SuccessModal/SuccessModal';
 
 const MainPage = () => {
   const navigate = useNavigate();
@@ -153,12 +154,8 @@ const MainPage = () => {
         ))}
       </div>
 
-      {error && (
-        <ErrorModal visible={true} message={error} onClose={closeErrorModal} />
-      )}
-      {success && (
-        <ErrorModal visible={true} message={success} onClose={closeSuccessModal} />
-      )}
+      {error && (<ErrorModal visible={true} message={error} onClose={closeErrorModal} />)}
+      {success && (<SuccessModal visible={true} message={success} onClose={closeSuccessModal} />)}
     </div>
   );
 };
