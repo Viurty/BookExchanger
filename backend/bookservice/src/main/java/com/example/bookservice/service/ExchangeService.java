@@ -133,7 +133,10 @@ public class ExchangeService {
                           HttpStatus.NOT_FOUND,
                           "Книга с названием  " + bookNameRecipient + " не найдена!"));
       ;
-      if (!bookInitiator.getOwners().remove(exchange.getInitiator())) {
+
+      List<String> initiatorOwners = bookInitiator.getOwners();
+      List<String> recipientOwners = bookRecipient.getOwners();
+      if (!initiatorOwners.remove(exchange.getInitiator())) {
         throw new HttpStatusException(
             HttpStatus.NOT_FOUND,
             "Владелец "
@@ -141,7 +144,7 @@ public class ExchangeService {
                 + " не привязан к книге с названием "
                 + bookNameInitiator);
       }
-      if (!bookRecipient.getOwners().remove(exchange.getRecipient())) {
+      if (!recipientOwners.remove(exchange.getRecipient())) {
         throw new HttpStatusException(
             HttpStatus.NOT_FOUND,
             "Владелец "
@@ -149,8 +152,12 @@ public class ExchangeService {
                 + " не привязан к книге с названием "
                 + bookNameRecipient);
       }
-      bookInitiator.getOwners().add(exchange.getRecipient());
-      bookRecipient.getOwners().add(exchange.getInitiator());
+      if (!initiatorOwners.contains(exchange.getRecipient())) {
+        initiatorOwners.add(exchange.getRecipient());
+      }
+      if (!recipientOwners.contains(exchange.getInitiator())) {
+        recipientOwners.add(exchange.getInitiator());
+      }
       bookRepository.save(bookInitiator);
       bookRepository.save(bookRecipient);
     }
