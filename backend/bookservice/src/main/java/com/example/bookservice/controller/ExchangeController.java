@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/exchanges")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "${frontend.address:http://localhost:5173}")
 public class ExchangeController {
   private final ExchangeService exchangeService;
 

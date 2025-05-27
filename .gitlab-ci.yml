@@ -1,0 +1,19 @@
+stages:
+  - test
+
+test-java-app:
+  stage: test
+  image: gradle:8.12.1-jdk17
+  tags:
+    - students-buildkit-medium
+  script:
+    - cd java-main-service
+    - gradle test --info --tests "*"
+  artifacts:
+    paths:
+      - backend/bookservice/build/test-results
+      - backend/bookservice/build/reports
+    when: always
+  cache:
+    paths:
+      - backend/bookservice/.gradle/
