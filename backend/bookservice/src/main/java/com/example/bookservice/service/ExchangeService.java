@@ -32,8 +32,12 @@ public class ExchangeService {
 
   @Transactional
   public void addExchange(Exchange ex) {
-    if (exchangeRepository.existsByInitiatorAndRecipientAndBookInitiatorAndBookRecipient(
-        ex.getInitiator(), ex.getRecipient(), ex.getBookInitiator(), ex.getBookRecipient())) {
+    if (exchangeRepository.existsByInitiatorAndRecipientAndBookInitiatorAndBookRecipientAndStatus(
+        ex.getInitiator(),
+        ex.getRecipient(),
+        ex.getBookInitiator(),
+        ex.getBookRecipient(),
+        "wait")) {
       throw new HttpStatusException(HttpStatus.CONFLICT, "Данный обмен уже существует!");
     }
 
