@@ -10,8 +10,6 @@ import ProfilePage from './components/ProfilePage/ProfilePage';
 import ExchangesPage from './components/ExchangesPage/ExchangesPage';
 import AdminPanel from './components/AdminPanel/AdminPanel';
 
-
-
 function App() {
   return (
     <AuthProvider>
