@@ -28,14 +28,18 @@ func (s *Server) RegisterUser(ctx context.Context, req *pb.RegisterData) (*pb.Re
 	password := strings.TrimSpace(req.GetPassword())
 	phone := strings.TrimSpace(req.GetPhone())
 	role := database.EnumToString(req.GetRole())
-	encrypted_password := hash.EncryptPassword(password)
 	if strings.Contains(login, " ") || strings.Contains(phone, " ") || strings.Contains(password, " ") {
 		return &pb.RegisterStatus{Success: false, MsgError: "Недопустимые значения в данных."}, nil
+	}
+	encrypted_password, err := hash.EncryptPassword(password)
+	if err != nil {
+		log.Printf("ошибка хеширования пароля: %v", err)
+		return &pb.RegisterStatus{Success: false, MsgError: "Ошибка со стороны сервера."}, nil
 	}
 	user := database.UserFromDB{Login: login, Role: role, Phone: phone, Password: encrypted_password}
 
 	s.mu.Lock()
-	err := s.DBX.CreateUser(ctx, user)
+	err = s.DBX.CreateUser(ctx, user)
 	s.mu.Unlock()
 	if err != nil {
 		if pgErr, ok := err.(*pgconn.PgError); ok && pgErr.Code == "23505" {

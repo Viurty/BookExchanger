@@ -22,18 +22,21 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	db := database.StartDB(dsn, ctx)
+	db, err := database.StartDB(dsn, ctx)
+	if err != nil {
+		log.Fatalf("Ошибка инициализации базы данных: %v", err)
+	}
 	defer db.Close()
 
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", server_port))
 	if err != nil {
-		log.Printf("Ошибка запуска слушателя: %v", err)
+		log.Fatalf("Ошибка запуска слушателя: %v", err)
 	}
 
 	grpcServer := grpc.NewServer()
 	pb.RegisterAuthServiceServer(grpcServer, &server.Server{DBX: db, Secret: []byte(secret)})
 	log.Printf("Сервер запущен!")
 	if err := grpcServer.Serve(listener); err != nil {
-		log.Printf("Ошибка работы gRPC-сервера: %v", err)
+		log.Fatalf("Ошибка работы gRPC-сервера: %v", err)
 	}
 }

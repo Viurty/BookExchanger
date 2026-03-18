@@ -72,9 +72,8 @@ public class BookController {
 
   @Operation(summary = "Удалить книгу из профиля пользователя")
   @PutMapping("/delete")
-  public ResponseEntity<String> deleteBooks(@RequestBody BookDto bookDto) {
+  public ResponseEntity<Void> deleteBooks(@RequestBody BookDto bookDto) {
     bookService.deleteOwner(bookDto);
-    return ResponseEntity.status(HttpStatus.NO_CONTENT)
-        .body("Книга была удалена с вашего аккаунта!");
+    return ResponseEntity.noContent().build();
   }
 }

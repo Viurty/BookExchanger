@@ -50,6 +50,15 @@ out/
 
 # Dependency caches
 vendor/
+node_modules/
+
+# Environment
+.env
+.env.*
+!.env.example
+frontend/website/.env
+frontend/website/.env.*
+!frontend/website/.env.example
 
 # Logs
 *.log

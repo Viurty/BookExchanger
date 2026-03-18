@@ -2,7 +2,7 @@ package database
 
 import (
 	"context"
-	"log"
+	"fmt"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jmoiron/sqlx"
@@ -16,11 +16,10 @@ func NewDBX(dbx *sqlx.DB) *DBX {
 	return &DBX{dbx: dbx}
 }
 
-func StartDB(dsn string, ctx context.Context) *DBX {
+func StartDB(dsn string, ctx context.Context) (*DBX, error) {
 	dbx, err := sqlx.ConnectContext(ctx, "pgx", dsn)
 	if err != nil {
-		log.Printf("ошибка подключения к базе данных: %v", err)
-		return nil
+		return nil, fmt.Errorf("ошибка подключения к базе данных: %w", err)
 	}
 
 	query := `
@@ -34,9 +33,9 @@ func StartDB(dsn string, ctx context.Context) *DBX {
 
 	_, err = dbx.ExecContext(ctx, query)
 	if err != nil {
-		log.Printf("ошибка создания таблицы: %v", err)
+		_ = dbx.Close()
+		return nil, fmt.Errorf("ошибка создания таблицы users: %w", err)
 	}
 
-	log.Printf("Датабаза подключена успешно!")
-	return NewDBX(dbx)
+	return NewDBX(dbx), nil
 }

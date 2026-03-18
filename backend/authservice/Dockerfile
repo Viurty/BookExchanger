@@ -1,12 +1,12 @@
 FROM golang:1.23.5-alpine AS builder
 
 RUN apk update && \
-    apk add --no-cache \
+      apk add --no-cache \
       git \
       protobuf protobuf-dev
 
-RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.34.2
+RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.5.1
 
 WORKDIR /app
 

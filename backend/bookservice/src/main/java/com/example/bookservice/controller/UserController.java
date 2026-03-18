@@ -47,10 +47,9 @@ public class UserController {
 
   @Operation(summary = "Выдать пользователю новую роль")
   @PostMapping("/role/{code}")
-  public ResponseEntity<Map<String, String>> giveRoleToUser(
+  public ResponseEntity<Void> giveRoleToUser(
       @RequestBody LoginRequestDto user, @PathVariable String code) {
     userService.giveRole(user, code);
-    return ResponseEntity.status(HttpStatus.NO_CONTENT)
-        .body(Map.of("message", "Пользователь теперь имеет новую роль!"));
+    return ResponseEntity.noContent().build();
   }
 }
