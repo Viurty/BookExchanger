@@ -46,4 +46,12 @@ public class Book {
   @NotBlank(message = "Description cannot be empty or invalid")
   @Size(max = 1000, message = "Description must not exceed 1000 characters")
   private String description;
+
+  public Book(List<String> owners, String name, String author, String genre, String description) {
+    this.owners = owners;
+    this.name = name;
+    this.author = author;
+    this.genre = genre;
+    this.description = description;
+  }
 }

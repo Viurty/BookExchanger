@@ -17,6 +17,9 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
   List<Book> findByOwnersIsNotEmpty();
 
+  @Query("SELECT o FROM Book b JOIN b.owners o WHERE b.name = :bookName")
+  List<String> findOwnersByBookName(String bookName);
+
   @Query("SELECT o FROM Book b JOIN b.owners o WHERE b.id = :id")
   List<String> findOwnersById(Long id);
 
